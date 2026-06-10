@@ -1,0 +1,154 @@
+.detail-page {
+  background: #fff;
+  min-height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-page__body {
+  flex: 1;
+  padding-bottom: 64px;
+}
+
+.detail-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  z-index: 200;
+  font-size: 14px;
+}
+
+.detail-hero {
+  position: relative;
+  height: 280px;
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+.detail-hero__thumb {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.detail-hero__badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding: 4px 10px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+@media (min-width: 1024px) {
+  .detail-hero {
+    height: 420px;
+    max-height: 50vh;
+  }
+}
+
+.detail-info {
+  padding: 16px;
+}
+
+.detail-info h1 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.detail-price {
+  color: #e4393c;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.detail-spec,
+.detail-brand,
+.detail-desc {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.detail-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fff;
+  border-top: 1px solid #eee;
+  z-index: 50;
+}
+
+@media (min-width: 1024px) {
+  .detail-footer {
+    position: static;
+    max-width: 1200px;
+    margin: 16px auto 0;
+    border-radius: 8px;
+    border: 1px solid #eee;
+  }
+
+  .detail-page__body {
+    padding-bottom: 0;
+  }
+
+  .detail-page {
+    min-height: auto;
+  }
+}
+
+.detail-footer__icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: #f5f5f5;
+  border-radius: 50%;
+  font-size: 18px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.detail-footer__cart {
+  flex: 1;
+  height: 40px;
+  border: 1px solid #f0627d;
+  background: #fff;
+  color: #f0627d;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.detail-footer__buy {
+  flex: 1;
+  height: 40px;
+  border: none;
+  background: #f0627d;
+  color: #fff;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+}

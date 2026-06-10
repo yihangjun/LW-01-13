@@ -1,0 +1,146 @@
+.cart-page {
+  background: var(--color-bg);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+}
+
+.cart-page .cart-list-wrap {
+  flex: 1;
+  padding: 10px;
+}
+
+.cart-empty {
+  text-align: center;
+  color: #999;
+  padding: 40px 0;
+}
+
+.cart-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cart-item {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  align-items: flex-start;
+}
+
+.cart-item__img {
+  width: 72px;
+  height: 72px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.cart-item__info {
+  flex: 1;
+}
+
+.cart-item__name {
+  margin: 0;
+  font-size: 14px;
+}
+
+.cart-item__spec {
+  margin: 4px 0;
+  font-size: 12px;
+  color: #999;
+}
+
+.cart-item__price {
+  margin: 0;
+  color: #e4393c;
+  font-weight: 600;
+}
+
+.cart-item__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.cart-item__actions button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cart-item__delete {
+  width: auto !important;
+  padding: 0 8px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.cart-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid #eee;
+  margin-top: 8px;
+}
+
+.cart-footer__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.cart-footer__clear {
+  border: none;
+  background: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.cart-footer__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cart-footer__total {
+  color: #e4393c;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.cart-footer__checkout {
+  background: #f0627d;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.cart-back {
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+  color: #409eff;
+  font-size: 13px;
+}

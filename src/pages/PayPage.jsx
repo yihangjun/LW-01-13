@@ -1,61 +1,102 @@
-import React,{ useContext } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useContext, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ServiceContext } from '../contexts/ServiceContext';
-
+import { PAY_METHODS } from '../constants/orderStatus';
+import './OrderFlow.css';
 
 const PayPage = () => {
   const { orderId } = useParams();
-  const services = useContext(ServiceContext);
+  const { order } = useContext(ServiceContext);
   const navigate = useNavigate();
+  const [payMethod, setPayMethod] = useState('alipay');
+  const [countdown, setCountdown] = useState(60);
+  const [paying, setPaying] = useState(false);
 
-  const parsedOrderId = parseInt(orderId, 10);
-  const order = services.order.getOrderById(parsedOrderId);
+  const parsedOrderId = Number(orderId);
+  const orderData = order.getOrderById(parsedOrderId);
 
-  if (!order) {
-    //TBD 跳转主页
-    alert('订单不存在');
-    navigate('/home');
-    return;
+  useEffect(() => {
+    if (countdown <= 0) return undefined;
+    const t = setInterval(() => setCountdown((c) => c - 1), 1000);
+    return () => clearInterval(t);
+  }, [countdown]);
+
+  if (!orderData) {
+    return (
+      <div className="order-flow-page">
+        <div className="order-flow order-flow--center">
+          <p>订单不存在</p>
+          <button type="button" className="order-submit-bar__btn" onClick={() => navigate('/')}>返回首页</button>
+        </div>
+      </div>
+    );
   }
 
-  const onPayClick = () => {
-    // 1. 支付 
-    
-    const success = services.order.payOrder(parsedOrderId);
-    if (!success) {
-      alert('支付失败!');
-      return;
-    }
-    // 2. 跳转到支付成功页面
-    alert('支付成功')
-    navigate(`/orderDetail/${orderId}`)
-  }
-/*
-{
-    id: 1,
-    userId: 1,
-    orderNo: '201801010001',
-    createTime: '2018-01-01 00:00:00',
-    payTime: '2018-01-01 00:00:00',
-    status: 0,未支付 1已支付 2发货 3确认收货
-    total: 100,
-    goods: [
-        {
-            id: 1,
-            count: 1
-        }
-    ],
-}
-*/
-  return <>
-    <h1>Pay Page</h1>
-    <p> orderId: {orderId}</p>
-    <p> orderNo: {order.orderNo}</p>
-    <p> createTime: {order.createTime}</p>
-    <p> price: {order.price}</p>
-    <p> goodId: {order.goodId}</p>
-    <button onClick={onPayClick}> 支付！ </button>
-  </>
-}
+  const confirmPay = () => {
+    if (paying) return;
+    setPaying(true);
+    setTimeout(() => {
+      const ok = order.payOrder(parsedOrderId, payMethod);
+      setPaying(false);
+      if (ok) {
+        navigate(`/pay-success/${parsedOrderId}`);
+      } else {
+        alert('支付失败，请重试');
+      }
+    }, 1800);
+  };
+
+  return (
+    <div className="order-flow-page">
+    <div className="order-flow">
+      <h2 className="order-flow__title">支付</h2>
+      <div className="order-card order-card--center">
+        <p className="pay-amount">¥{orderData.total}</p>
+        <p className="order-card__muted">
+          请在 <strong>{countdown}</strong> 秒内完成支付
+        </p>
+      </div>
+
+      {paying && (
+        <div className="pay-qr">
+          <div className="pay-qr__box">
+            <div className="pay-qr__pattern" />
+            <span>模拟二维码</span>
+          </div>
+          <p>正在模拟 {payMethod === 'alipay' ? '支付宝' : '微信'} 支付…</p>
+          <p className="order-card__muted">不跳转真实支付页面</p>
+        </div>
+      )}
+
+      {!paying && (
+        <div className="order-card">
+          {PAY_METHODS.map((m) => (
+            <label key={m.id} className="pay-method">
+              <input
+                type="radio"
+                name="pay"
+                value={m.id}
+                checked={payMethod === m.id}
+                onChange={() => setPayMethod(m.id)}
+              />
+              {m.name}
+            </label>
+          ))}
+        </div>
+      )}
+
+      <button
+        type="button"
+        className="pay-confirm-btn"
+        onClick={confirmPay}
+        disabled={paying || countdown <= 0}
+      >
+        {paying ? '支付处理中…' : '确认支付'}
+      </button>
+      <p className="pay-hint">点击确认后展示模拟二维码，约 2 秒后自动完成支付</p>
+    </div>
+    </div>
+  );
+};
 
 export default PayPage;

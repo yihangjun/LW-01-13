@@ -1,116 +1,139 @@
 # 第四次作业报告
 
-**姓名：** ___  
-**学号：** ___  
+**姓名：** 周一航  
+**学号：** 23301174  
 **作业名称：** React 商城系统
 
 ---
 
 ## 1. 组员分工
 
-> 由组长填写，列出每位成员的具体产出与贡献占比。贡献占比总和应为 100%。
-
 | 姓名 | 学号 | 分工与产出 | 贡献占比 |
 |------|------|-----------|---------|
-| ___（组长） | ___ | ___ | ___% |
-| ___ | ___ | ___ | ___% |
-| ___ | ___ | ___ | ___% |
-| ___ | ___ | ___ | ___% |
+| 周一航 | 23301174 | 项目架构、Gerrit 管理、登录模块、Spec Kit 流程、Report 撰写 | 22% |
+| 罗督星 | 23301159 | 数据层 Service、localStorage 持久化、订单服务 | 20% |
+| 张喆 | 23301170 | 首页、分类页、商品详情、购物车 | 20% |
+| 周锐 | 23301173 | 购买全链路（下单、支付、订单页）、我的页面 | 20% |
+| 王艺晓 | 21301167 | 后台管理端、权限、响应式样式、PPT | 18% |
 
-**分工说明（参考分类）：** 产品设计、UI 设计、前台编码、后台编码、PPT 制作、测试、文档撰写等。  
-**注意：** 非编码工作（产品设计、PPT、文档等）同样计入贡献。
+**分工说明：** 本项目使用 Spec Kit 进行规格驱动开发，规格文档保存在本地（不提交仓库），代码统一通过 Gerrit 评审合入。
 
 ---
 
 ## 2. 项目结构
 
-请说明你的项目结构与组件拆分方式：
-
 ```
-App（根组件，含 <Outlet /> 渲染子路由）
-├── HomePage           ← 商城主页面（搜索框、轮播图、热门商品）
-├── LoginPage          ← 用户登录/注册页
-├── DetailPage         ← 商品详情页
-├── CreateOrderPage    ← 创建订单页
-├── PayPage            ← 支付页面
-├── OrderListPage      ← 订单列表页
-├── OrderDetailPage    ← 订单详情页
-└── ...                ← 其他页面/组件
-```
+App（根组件，含 Outlet + 底部 TabBar）
+├── HomePage              ← 商城主页面（搜索、轮播、热门商品、品牌区）
+├── CategoryPage          ← 分类页（左侧分类 + 右侧子分类）
+├── CartPage              ← 购物车
+├── MyPage                ← 我的页面
+├── LoginPage / RegisterPage ← 用户登录注册
+├── DetailPage            ← 商品详情
+├── CreateOrderPage       ← 确认订单
+├── PayPage / PaySuccessPage ← 支付与支付成功
+├── OrderListPage         ← 订单列表
+├── OrderDetailPage       ← 订单详情
+└── admin/*               ← 后台管理（独立布局）
 
-各页面/组件职责说明：
+components/  SearchBar, Carousel, ProductCard, TabBar
+contexts/    UserContext, ServiceContext
+services/    good, order, cart, category, admin
+mock/        banners, categories, addresses
+```
 
 | 页面/组件 | 职责 |
 |-----------|------|
-| App | ___ |
-| HomePage | ___ |
-| LoginPage | ___ |
-| DetailPage | ___ |
-| CreateOrderPage | ___ |
-| PayPage | ___ |
-| OrderListPage | ___ |
-| OrderDetailPage | ___ |
+| App | 前台布局容器，控制 TabBar 显示 |
+| HomePage | 搜索、轮播、快捷入口、品牌区、热门商品分页加载 |
+| LoginPage | 用户登录、体验账号、跳转注册 |
+| DetailPage | 商品展示、加购、立即购买 |
+| CartPage | 购物车增删改、全选、结算 |
+| CreateOrderPage | 确认地址与商品清单、提交订单 |
+| PayPage | 支付方式选择、倒计时、模拟二维码支付 |
+| OrderListPage | 用户订单列表 |
+| OrderDetailPage | 订单状态、物流、商品信息 |
+| AdminLayout | 后台侧边栏、权限菜单 |
+| AdminGoodsPage | 商品 CRUD、上下架开关 |
+| AdminOrdersPage | 订单列表、发货操作 |
+
+---
 
 ## 3. 前台功能实现说明
 
 | 功能模块 | 实现方式 |
 |----------|----------|
-| 商城主页面（搜索框/轮播图/热门商品） | ___ |
-| 商品详情页 | ___ |
-| 购物车 | ___ |
-| 创建订单 | ___ |
-| 支付页面 | ___ |
-| 订单列表 | ___ |
-| 订单详情 | ___ |
-| 用户登录/注册 | ___ |
+| 商城主页面（搜索框/轮播图/热门商品） | `HomePage` + `SearchBar`/`Carousel`/`ProductCard`；`goodService.searchGoods` 与分页加载 |
+| 分类页 | `CategoryPage` 左侧 `categoryService` 主分类，右侧子分类网格 |
+| 购物车 | `cartService` + `CartPage`；localStorage 持久化 |
+| 商品详情页 | `DetailPage` 展示规格价格，登录后可加购/购买 |
+| 创建订单 | `CreateOrderPage` 支持单品与购物车两种入口 |
+| 支付页面 | `PayPage` 模拟支付宝/微信，60s 倒计时 + 二维码动画 |
+| 订单列表 | `OrderListPage` 按用户账号过滤 |
+| 订单详情 | `OrderDetailPage` 展示状态、地址、物流说明 |
+| 用户登录/注册 | `UserContext` + localStorage；表单校验 |
+
+---
 
 ## 4. 后台管理端功能实现说明
 
-> 商品管理、分类管理、订单管理中至少完成一个完整的管理功能。
-
 | 功能模块 | 实现方式 |
 |----------|----------|
-| 后台登录 | ___ |
-| 权限管理 | ___ |
-| 商品管理 / 分类管理 / 订单管理（选填） | ___ |
+| 后台登录 | `/admin/login`；账号 admin/admin123、operator/123456 |
+| 权限管理 | `adminService` 角色权限：admin 全模块，operator 仅订单 |
+| 商品管理 | `AdminGoodsPage` 增删改查、上架/新品开关 |
+| 分类管理 | `AdminCategoriesPage` 分类 CRUD |
+| 订单管理 | `AdminOrdersPage` 列表筛选、发货、删除 |
+
+---
 
 ## 5. 路由设计
 
-请说明前台与后台的路由规划：
-
 ```jsx
-// 示例
-const router = createBrowserRouter([
-  { path: "/", Component: HomePage },
-  { path: "/login", Component: LoginPage },
-  { path: "/detail/:goodId", Component: DetailPage },
-  // ...后台路由
-]);
+// 前台（App 布局 + TabBar）
+/  /category  /cart  /my
+/login  /register  /detail/:goodId
+/create-order/:goodId  /pay/:orderId  /pay-success/:orderId
+/order-list  /order-detail/:orderId
+
+// 后台（AdminLayout）
+/admin/login
+/admin/goods  /admin/categories  /admin/orders
 ```
+
+路由使用 `React.lazy` 懒加载，非 Tab 页面隐藏底部导航。
+
+---
 
 ## 6. 状态管理与数据存储
 
-请说明全局状态的管理方式（Context / Redux 等）以及数据持久化方案：
+- **全局状态管理方式：** Context + Service 模式（`UserContext` 用户态，`ServiceContext` 注入各 Service）
+- **数据存储方式：** localStorage（goodList、orderList、cartList、categoryList、mall_user、mall_admin）
+- **前后台数据联动方式：** 后台修改商品写入 `goodList`，前台 `goodService` 读取同一份 localStorage；订单创建后后台 `orderService` 可见
 
-- **全局状态管理方式：** ___（如 Context + Service 模式）
-- **数据存储方式：** ___（如 localStorage / Mock.js / 后端 API）
-- **前后台数据联动方式：** ___
+---
 
 ## 7. 加分项完成情况
 
-- [ ] **后端联动**：___（说明接入的后端 API）
-- [ ] **数据持久化**：___（刷新页面后购物车/登录状态不丢失）
-- [ ] **表单验证**：___（说明验证了哪些字段、如何提示）
-- [ ] **分页/无限滚动**：___
-- [ ] **支付模拟优化**：___（支付倒计时/二维码等）
-- [ ] **响应式布局**：___
-- [ ] **性能优化**：___（React.memo / useCallback / 懒加载等）
-- [ ] **单元测试**：___
-- [ ] **部署上线**：___（提供可访问链接）
+- [x] **数据持久化**：购物车、登录态、商品/订单/分类均 localStorage 持久化
+- [x] **表单验证**：登录/注册用户名、密码长度校验并提示
+- [x] **分页/无限滚动**：首页热门商品「加载更多」
+- [x] **支付模拟优化**：60 秒倒计时 + 模拟二维码 + 不跳转真实支付
+- [x] **响应式布局**：手机底部 Tab；平板 720px 内容区；电脑顶部导航 + 1200px 宽屏四列商品网格（非单纯拉伸）
+- [x] **性能优化**：路由 `React.lazy` 懒加载、`ProductCard` 使用 `memo`
+- [ ] **后端联动**：未接真实 API，使用 localStorage 模拟（作业允许）
+- [ ] **单元测试**：时间关系未添加 Vitest
+- [ ] **部署上线**：可部署至 Vercel，链接待补充
+
+---
 
 ## 8. 遇到的问题与解决方案
 
 | 问题 | 解决方案 |
 |------|----------|
-| ___ | ___ |
-| ___ | ___ |
+| 直接打开 index.html 白屏 | 使用 `npm run dev` 启动 Vite 开发服务器 |
+| Gerrit push 报 no new changes | 先添加代码并 commit，再 push 到 refs/for/master |
+| 旧版 order 数据结构不兼容 | orderService 增加 `_migrateLegacyOrders` 迁移 |
+| 首页无商品（旧 localStorage 缺 isHot） | `goodListVersion` 版本号 + `initAppData` 自动修复数据 |
+| Spec Kit 文件不宜提交 | 将 `.specify/`、`specs/`、`.cursor/skills/` 加入 .gitignore |
+| 体验账号不明确 | 默认账号 member/123456，点击「获取体验账号」填入并自动登录 |
