@@ -12,7 +12,7 @@ const emptyForm = () => ({
   brand: '',
   sku: '',
   stock: '',
-  categoryId: '2',
+  categoryId: '2-1',
   color: '#ccc',
   spec: '',
   onSale: true,
@@ -41,7 +41,7 @@ const AdminGoodsPage = () => {
     return good.getGoodList().filter((g) => {
       if (!g?.id) return false;
       if (keyword && !g.name.includes(keyword)) return false;
-      if (categoryFilter && g.categoryId !== categoryFilter) return false;
+      if (categoryFilter && !category.goodsMatchCategory(g.categoryId, categoryFilter)) return false;
       if (onSaleFilter === '1' && !g.onSale) return false;
       if (onSaleFilter === '0' && g.onSale) return false;
       return true;
@@ -120,7 +120,7 @@ const AdminGoodsPage = () => {
     bump();
   };
 
-  const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || id;
+  const getCategoryName = (id) => category.getDisplayInfo(id)?.label || id;
 
   return (
     <>
@@ -136,7 +136,12 @@ const AdminGoodsPage = () => {
             <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
               <option value="">全部分类</option>
               {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                <optgroup key={c.id} label={c.name}>
+                  <option value={c.id}>{c.name}（全部）</option>
+                  {(c.children || []).map((ch) => (
+                    <option key={ch.id} value={ch.id}>{ch.name}</option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </label>
@@ -276,7 +281,15 @@ const AdminGoodsPage = () => {
             <span>分类</span>
             <select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>
               {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                (c.children || []).length > 0 ? (
+                  <optgroup key={c.id} label={c.name}>
+                    {c.children.map((ch) => (
+                      <option key={ch.id} value={ch.id}>{ch.name}</option>
+                    ))}
+                  </optgroup>
+                ) : (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                )
               ))}
             </select>
           </label>

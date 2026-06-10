@@ -1,101 +1,68 @@
-import { useContext, useMemo, useState } from 'react';
-import { banners } from '../mock/banners';
-import { ServiceContext } from '../contexts/ServiceContext';
-import SearchBar from '../components/SearchBar';
-import Carousel from '../components/Carousel';
-import ProductCard from '../components/ProductCard';
-import CategoryNav from '../components/CategoryNav';
-import './HomePage.css';
+import { useContext, useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { TrendingUp, ChevronRight, Flame } from "lucide-react";
+import { ServiceContext } from "../contexts/ServiceContext";
+import Carousel from "../components/Carousel";
+import SearchBar from "../components/SearchBar";
+import ProductGrid from "../components/ProductGrid";
+import { isGoodOnSale } from "../utils/goodDisplay";
+import "./HomePage.css";
 
-const brands = [
-  { name: '小米', count: 100, color: '#ff6900' },
-  { name: 'HUAWEI', count: 100, color: '#cf0a2c' },
-  { name: '海澜之家', count: 80, color: '#1a5fb4' },
-];
+export default function HomePage() {
+  const services = useContext(ServiceContext);
+  const [hotGoods, setHotGoods] = useState([]);
+  const [categories, setCategories] = useState([]);
 
-const HomePage = () => {
-  const { good } = useContext(ServiceContext);
-  const [keyword, setKeyword] = useState('');
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [page, setPage] = useState(1);
-
-  const hotList = useMemo(() => {
-    const hot = good.getHotGoods();
-    if (hot.length > 0) return hot;
-    return good.getGoodList().filter((g) => g.onSale);
-  }, [good]);
-
-  const isSearching = searchKeyword.trim().length > 0;
-  const displayList = isSearching
-    ? good.searchGoods(searchKeyword)
-    : hotList.slice(0, page * 4);
-  const hasMore = !isSearching && displayList.length < hotList.length;
+  useEffect(() => {
+    const list = services.good.getGoodList().filter(isGoodOnSale);
+    setHotGoods(list.sort((a, b) => (b.sales || 0) - (a.sales || 0)).slice(0, 8));
+    setCategories(services.category.getAll());
+  }, [services]);
 
   return (
     <div className="home-page">
-      <header className="home-header">
-        <div className="home-header__search">
-          <span className="home-header__icon">📷</span>
-          <SearchBar
-            value={keyword}
-            onChange={setKeyword}
-            placeholder="请输入商品如：手机"
-            onSearch={() => {
-              setSearchKeyword(keyword.trim());
-              setPage(1);
-            }}
-          />
-          <span className="home-header__icon">💬</span>
+      <section className="home-hero">
+        <div className="container">
+          <div className="home-search-area">
+            <h1 className="home-title">发现你的生活好物</h1>
+            <p className="home-subtitle">精选品质商品，每日更新</p>
+            <div className="home-searchbar">
+              <SearchBar />
+            </div>
+          </div>
+          <Carousel />
         </div>
-      </header>
+      </section>
 
-      <div className="home-body">
-        <Carousel items={banners} />
-
-        <section className="home-section home-section--categories">
-          <h3 className="home-section-label">商品分类</h3>
-          <CategoryNav />
-        </section>
-
-        <div className="home-brands">
-          <h3 className="home-section-label">品牌制造直供</h3>
-          <div className="home-brands__row">
-            {brands.map((b) => (
-              <div key={b.name} className="home-brands__card" style={{ borderColor: b.color }}>
-                <strong style={{ color: b.color }}>{b.name}</strong>
-                <span>商品数量：{b.count}</span>
-              </div>
-            ))}
+      <section className="home-section container">
+        <div className="section-header">
+          <div className="section-header-left">
+            <TrendingUp size={20} />
+            <h2>全部分类</h2>
           </div>
         </div>
+        <div className="home-categories">
+          {categories.map(cat => (
+            <Link key={cat.id} to={`/category/${cat.id}`} className="home-cat-item">
+              <span className="home-cat-icon">{cat.icon}</span>
+              <span className="home-cat-name">{cat.name}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
-        <section className="home-section">
-          <h2 className="home-section__title">
-            {isSearching ? '搜索结果' : '热门商品'}
-            <small>（{isSearching ? displayList.length : hotList.length} 件）</small>
-          </h2>
-          {displayList.length === 0 ? (
-            <p className="home-empty">暂无相关商品</p>
-          ) : (
-            <div className="product-grid">
-              {displayList.map((item) => (
-                <ProductCard key={item.id} product={item} />
-              ))}
-            </div>
-          )}
-          {!isSearching && hasMore && (
-            <button
-              type="button"
-              className="home-load-more"
-              onClick={() => setPage((p) => p + 1)}
-            >
-              加载更多
-            </button>
-          )}
-        </section>
-      </div>
+      <section className="home-section container">
+        <div className="section-header">
+          <div className="section-header-left">
+            <Flame size={20} />
+            <h2>热门推荐</h2>
+          </div>
+          <Link to="/category" className="section-header-right">
+            查看全部 <ChevronRight size={16} />
+          </Link>
+        </div>
+        <ProductGrid goods={hotGoods} />
+      </section>
     </div>
   );
-};
-
-export default HomePage;
+}

@@ -53,6 +53,8 @@ export function UserProvider({ children }) {
     const session = {
       username: found.username,
       nickname: found.nickname || found.username,
+      phone: found.phone || '',
+      address: found.address || '',
     };
     setUser(session);
     setItem(STORAGE_KEY, session);
@@ -97,6 +99,26 @@ export function UserProvider({ children }) {
     removeItem(STORAGE_KEY);
   }, []);
 
+  const updateUser = useCallback((updates) => {
+    if (!user) return;
+    const users = loadUsers();
+    const idx = users.findIndex((u) => u.username === user.username);
+    if (idx === -1) return;
+
+    const next = { ...users[idx], ...updates };
+    users[idx] = next;
+    saveUsers(users);
+
+    const session = {
+      username: next.username,
+      nickname: next.nickname || next.username,
+      phone: next.phone || '',
+      address: next.address || '',
+    };
+    setUser(session);
+    setItem(STORAGE_KEY, session);
+  }, [user]);
+
   const getDemoAccount = useCallback(() => ({ ...DEMO_ACCOUNT }), []);
 
   return (
@@ -107,6 +129,7 @@ export function UserProvider({ children }) {
         loginWithDemo,
         register,
         logout,
+        updateUser,
         getDemoAccount,
         isLoggedIn: !!user,
       }}

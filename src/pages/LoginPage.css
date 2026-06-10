@@ -1,7 +1,59 @@
+/* 登录/注册页独立样式，避免被商城全局 reset 影响 */
+.auth-layout,
+.auth-page {
+  --color-primary: #e4393c;
+  --color-primary-light: #f0627d;
+  --color-primary-bg: #fff5f6;
+  --color-text: #333;
+  --color-text-secondary: #666;
+  --color-text-muted: #999;
+  --color-surface: #fff;
+  --color-bg: #f5f5f5;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --transition: 0.25s ease;
+}
+
 .auth-layout {
   min-height: 100vh;
   display: flex;
   background: var(--color-bg);
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--color-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-page__decor {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.auth-page__decor--green {
+  width: 280px;
+  height: 280px;
+  background: #b8f0d8;
+  top: -80px;
+  left: -60px;
+}
+
+.auth-page__decor--purple {
+  width: 260px;
+  height: 260px;
+  background: #e8c4f0;
+  bottom: -70px;
+  right: -50px;
 }
 
 .auth-brand {
@@ -69,6 +121,8 @@
   border-radius: var(--radius-lg);
   padding: 32px 28px 28px;
   box-shadow: var(--shadow-md);
+  position: relative;
+  z-index: 1;
 }
 
 .auth-card__subtitle {
@@ -156,14 +210,39 @@
 }
 
 .auth-btn--primary {
-  background: var(--color-primary-light);
+  background-color: #f0627d;
   color: #fff;
 }
 
 .auth-btn--demo {
-  background: #fff;
-  color: var(--color-primary-light);
-  border: 1px solid var(--color-primary-light);
+  background-color: #fff;
+  color: #f0627d;
+  border: 1px solid #f0627d;
+}
+
+.auth-btn--link {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  line-height: 46px;
+}
+
+.auth-form__success {
+  margin: 0;
+  font-size: 13px;
+  color: #2e7d32;
+  text-align: center;
+  padding: 8px;
+  background: #e8f5e9;
+  border-radius: var(--radius-sm);
+}
+
+.auth-card__hint {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  text-align: center;
 }
 
 .auth-link {

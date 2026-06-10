@@ -1,0 +1,23 @@
+﻿.co-title { font-size: var(--text-2xl); font-weight: 700; margin-bottom: var(--space-6); }
+
+.co-address, .co-items { background: var(--color-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-5); margin-bottom: var(--space-4); }
+.co-address-header { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+.co-address-header h3 { font-size: var(--text-base); font-weight: 600; }
+.co-address-input { width: 100%; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--text-sm); outline: none; }
+.co-address-input:focus { border-color: var(--color-accent); }
+
+.co-items h3 { font-size: var(--text-base); font-weight: 600; margin-bottom: var(--space-3); }
+.co-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border-light); }
+.co-item:last-child { border-bottom: none; }
+.co-item-img { width: 56px; height: 56px; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-border-light); flex-shrink: 0; }
+.co-item-img img { width: 100%; height: 100%; object-fit: cover; }
+.co-item-info { flex: 1; min-width: 0; }
+.co-item-name { font-size: var(--text-sm); display: block; }
+.co-item-meta { font-size: var(--text-xs); color: var(--color-text-muted); }
+.co-item-price { font-weight: 600; font-size: var(--text-sm); }
+
+.co-footer { position: sticky; bottom: 0; background: var(--color-surface); border-top: 1px solid var(--color-border); padding: var(--space-4); display: flex; align-items: center; justify-content: space-between; border-radius: var(--radius-md) var(--radius-md) 0 0; box-shadow: var(--shadow-lg); margin: 0 calc(-1 * var(--space-4)); }
+.co-total { display: flex; align-items: baseline; gap: var(--space-3); }
+.co-total-price { font-size: var(--text-2xl); font-weight: 800; color: var(--color-accent); }
+.co-submit { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-8); background: var(--color-accent); color: white; font-weight: 600; border-radius: var(--radius-md); }
+.co-submit:hover { background: var(--color-accent-hover); }

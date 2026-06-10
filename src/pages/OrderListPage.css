@@ -1,0 +1,29 @@
+﻿.ol-title { font-size: var(--text-2xl); font-weight: 700; margin-bottom: var(--space-4); }
+
+.ol-filters { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); }
+.ol-filter-btn { padding: var(--space-1) var(--space-4); border-radius: var(--radius-full); font-size: var(--text-sm); border: 1px solid var(--color-border); color: var(--color-text-secondary); transition: all 0.15s; }
+.ol-filter-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.ol-filter-btn.active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+
+.ol-empty { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); padding: var(--space-12) var(--space-4); color: var(--color-text-muted); }
+.ol-empty a { color: var(--color-accent); font-weight: 600; }
+
+.ol-list { display: flex; flex-direction: column; gap: var(--space-3); }
+
+.ol-card { background: var(--color-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-4); transition: box-shadow 0.15s; display: block; }
+.ol-card:hover { box-shadow: var(--shadow-md); }
+
+.ol-card-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: var(--space-2); border-bottom: 1px solid var(--color-border-light); margin-bottom: var(--space-3); }
+.ol-order-no { font-size: var(--text-sm); color: var(--color-text-secondary); }
+.ol-status { font-size: var(--text-sm); font-weight: 600; }
+
+.ol-card-items { display: flex; flex-direction: column; gap: var(--space-2); }
+.ol-card-item { display: flex; align-items: center; gap: var(--space-3); }
+.ol-item-img { width: 48px; height: 48px; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-border-light); flex-shrink: 0; }
+.ol-item-img img { width: 100%; height: 100%; object-fit: cover; }
+.ol-item-info { flex: 1; min-width: 0; font-size: var(--text-sm); display: flex; justify-content: space-between; }
+.ol-item-info span:last-child { color: var(--color-text-muted); }
+.ol-item-price { font-weight: 600; font-size: var(--text-sm); }
+
+.ol-card-footer { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--color-border-light); margin-top: var(--space-3); font-size: var(--text-sm); color: var(--color-text-secondary); }
+.ol-total { font-weight: 700; color: var(--color-text); }

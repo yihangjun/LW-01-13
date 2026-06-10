@@ -1,0 +1,109 @@
+﻿.carousel {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  aspect-ratio: 3 / 1;
+  min-height: 180px;
+  max-height: 360px;
+  background: var(--color-surface);
+}
+
+.carousel-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.carousel-slide {
+  min-width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.carousel-slide-inner {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: white;
+}
+
+.carousel-slide-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.15) 0%, transparent 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.carousel-emoji {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-2);
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.carousel-title {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.carousel-subtitle {
+  font-size: var(--text-base);
+  opacity: 0.9;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,0.2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  backdrop-filter: blur(4px);
+}
+
+.carousel-btn:hover { background: rgba(255,255,255,0.35); }
+.carousel-btn.prev { left: var(--space-3); }
+.carousel-btn.next { right: var(--space-3); }
+
+.carousel-dots {
+  position: absolute;
+  bottom: var(--space-3);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: var(--space-2);
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,0.4);
+  transition: background 0.2s, width 0.2s;
+}
+
+.carousel-dot.active {
+  background: white;
+  width: 20px;
+}
+
+@media (max-width: 640px) {
+  .carousel { aspect-ratio: 16/9; min-height: 150px; max-height: 220px; }
+  .carousel-title { font-size: var(--text-xl); }
+  .carousel-subtitle { font-size: var(--text-sm); }
+  .carousel-emoji { font-size: 1.75rem; }
+}

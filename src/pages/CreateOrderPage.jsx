@@ -1,111 +1,118 @@
-import { useContext, useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ServiceContext } from '../contexts/ServiceContext';
-import { useUser } from '../contexts/UserContext';
-import { defaultAddress } from '../mock/addresses';
-import { useRequireUser } from '../hooks/useRequireUser';
-import ProductThumb from '../components/ProductThumb';
-import './OrderFlow.css';
+import { useContext, useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { MapPin, ChevronRight } from "lucide-react";
+import { ServiceContext } from "../contexts/ServiceContext";
+import { useCart } from "../contexts/CartContext";
+import { useMallAuth } from "../hooks/useMallAuth";
+import { useToast } from "../components/Toast";
+import GoodImage from "../components/GoodImage";
+import { defaultAddress } from "../mock/addresses";
+import { formatPrice } from "../utils/format";
+import "./CreateOrderPage.css";
 
-const CreateOrderPage = () => {
+export default function CreateOrderPage() {
   const { goodId } = useParams();
-  const { good, order, cart } = useContext(ServiceContext);
-  const { user } = useUser();
+  const services = useContext(ServiceContext);
+  const { clearSelected } = useCart();
+  const { user, updateUser } = useMallAuth();
+  const toast = useToast();
   const navigate = useNavigate();
-  const loggedIn = useRequireUser();
 
-  const isCart = goodId === 'cart';
+  const initialAddress = typeof user?.address === "string"
+    ? user.address
+    : user?.address?.detail || "";
 
-  const orderItems = useMemo(() => {
-    if (isCart) {
-      return cart.getSelectedItems().map((item) => {
-        const g = good.getGoodById(item.goodId);
-        return {
-          goodId: item.goodId,
-          count: item.count,
-          price: g?.price ?? 0,
-          name: g?.name ?? '',
-          spec: g?.spec ?? '',
-          color: g?.color ?? '#ccc',
-          brand: g?.brand ?? '',
-        };
+  const [address, setAddress] = useState(initialAddress);
+  const [orderItems, setOrderItems] = useState([]);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    let items;
+    if (goodId) {
+      const good = services.good.getGoodById(parseInt(goodId, 10));
+      if (!good) { navigate("/"); return; }
+      items = [{ goodId: good.id, count: 1, price: good.price }];
+    } else {
+      const stored = localStorage.getItem("checkoutItems");
+      if (!stored) { navigate("/cart"); return; }
+      const parsed = JSON.parse(stored);
+      items = parsed.map((i) => {
+        const g = services.good.getGoodById(i.goodId);
+        return { goodId: i.goodId, count: i.count, price: g?.price || 0 };
       });
     }
-    const g = good.getGoodById(goodId);
-    if (!g) return [];
-    return [{
-      goodId: g.id,
-      count: 1,
-      price: g.price,
-      name: g.name,
-      spec: g.spec,
-      color: g.color,
-      brand: g.brand,
-    }];
-  }, [isCart, goodId, cart, good]);
+    setOrderItems(items);
+    setTotal(items.reduce((s, i) => s + i.price * i.count, 0));
+  }, [goodId, services, navigate]);
 
-  const total = orderItems.reduce((sum, i) => sum + i.price * i.count, 0);
+  const handleSubmit = () => {
+    if (!address.trim()) { toast("请填写收货地址", "warning"); return; }
 
-  if (!loggedIn) return null;
+    for (const item of orderItems) {
+      const good = services.good.getGoodById(item.goodId);
+      if (good && good.stock != null && item.count > good.stock) {
+        toast(`「${good.name}」库存不足，仅剩 ${good.stock} 件`, "warning");
+        return;
+      }
+    }
 
-  if (orderItems.length === 0) {
-    return (
-      <div className="order-flow-page">
-        <div className="order-flow order-flow--center">
-          <p>没有可结算的商品</p>
-          <button type="button" className="order-submit-bar__btn" onClick={() => navigate('/')}>返回首页</button>
-        </div>
-      </div>
-    );
-  }
-
-  const submit = () => {
-    const created = order.createOrder({
+    updateUser({ address: address.trim() });
+    const order = services.order.createOrder({
       userAccount: user.username,
       items: orderItems,
-      address: { ...defaultAddress },
       total,
+      address: { ...defaultAddress, detail: address.trim() },
     });
-    if (isCart) {
-      cart.getSelectedItems().forEach((i) => cart.removeItem(i.goodId));
+    if (!goodId) {
+      clearSelected();
+      localStorage.removeItem("checkoutItems");
     }
-    navigate(`/pay/${created.id}`);
+    navigate(`/pay/${order.id}`);
   };
 
   return (
-    <div className="order-flow-page">
-      <div className="order-flow">
-        <h2 className="order-flow__title">确认订单</h2>
-        <div className="order-card">
-          <h3>收货信息</h3>
-          <p>{defaultAddress.name} {defaultAddress.phone}</p>
-          <p className="order-card__muted">{defaultAddress.detail}</p>
+    <div className="create-order-page container">
+      <h1 className="co-title">确认订单</h1>
+      <div className="co-address">
+        <div className="co-address-header">
+          <MapPin size={18} />
+          <h3>收货地址</h3>
         </div>
-        <div className="order-card">
-          <h3>商品清单</h3>
-          {orderItems.map((item) => (
-            <div key={item.goodId} className="order-item-row order-item-row--with-img">
-              <ProductThumb product={item} className="order-item__thumb" />
-              <div className="order-item__info">
-                <strong>{item.name}</strong>
-                <small>{item.spec} · x{item.count}</small>
+        <input
+          className="co-address-input"
+          type="text"
+          placeholder="请输入收货地址"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+        />
+      </div>
+      <div className="co-items">
+        <h3>商品清单</h3>
+        {orderItems.map((item, idx) => {
+          const good = services.good.getGoodById(item.goodId);
+          return (
+            <div key={idx} className="co-item">
+              <div className="co-item-img">
+                <GoodImage good={good} />
               </div>
-              <span className="order-item__price">¥{item.price * item.count}</span>
+              <div className="co-item-info">
+                <span className="co-item-name">{good?.name}</span>
+                <span className="co-item-meta">×{item.count}</span>
+              </div>
+              <span className="co-item-price">{formatPrice(item.price * item.count)}</span>
             </div>
-          ))}
+          );
+        })}
+      </div>
+      <div className="co-footer">
+        <div className="co-total">
+          <span>合计</span>
+          <span className="co-total-price">{formatPrice(total)}</span>
         </div>
-        <div className="order-card">
-          <div className="order-item-row"><span>商品合计</span><span>¥{total}</span></div>
-          <div className="order-item-row"><span>运费</span><span>¥0</span></div>
-          <div className="order-item-row order-item-row--total"><span>应付</span><span>¥{total}</span></div>
-        </div>
-        <div className="order-submit-bar">
-          <span>合计 <strong>¥{total}</strong></span>
-          <button type="button" className="order-submit-bar__btn" onClick={submit}>提交订单</button>
-        </div>
+        <button className="co-submit" onClick={handleSubmit}>
+          提交订单 <ChevronRight size={18} />
+        </button>
       </div>
     </div>
   );
-};
-
-export default CreateOrderPage;
+}

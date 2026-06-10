@@ -16,7 +16,7 @@ const LoginPage = () => {
     setError('');
     const result = login(username, password);
     if (result.ok) {
-      navigate('/my', { replace: true });
+      navigate('/user', { replace: true });
     } else {
       setError(result.message);
     }

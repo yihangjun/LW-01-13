@@ -1,89 +1,82 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { ServiceContext } from '../contexts/ServiceContext';
-import ProductCard from '../components/ProductCard';
-import './CategoryPage.css';
+import { useContext, useState, useEffect } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { ServiceContext } from "../contexts/ServiceContext";
+import ProductGrid from "../components/ProductGrid";
+import { isGoodOnSale } from "../utils/goodDisplay";
+import "./CategoryPage.css";
 
-const CategoryPage = () => {
-  const { category, good } = useContext(ServiceContext);
+export default function CategoryPage() {
+  const { categoryId } = useParams();
   const [searchParams] = useSearchParams();
-  const categories = (category.getList() || []).filter((c) => c?.id);
-  const queryId = searchParams.get('id');
-
-  const [activeId, setActiveId] = useState(
-    queryId && category.getById(queryId) ? queryId : categories[0]?.id || '1',
-  );
-  const [activeSubId, setActiveSubId] = useState(null);
+  const services = useContext(ServiceContext);
+  const [goods, setGoods] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const searchQuery = searchParams.get("search") || "";
 
   useEffect(() => {
-    if (queryId && category.getById(queryId)) {
-      setActiveId(queryId);
-      setActiveSubId(null);
+    let list = services.good.getGoodList().filter(isGoodOnSale);
+    if (categoryId) {
+      list = list.filter((g) => services.category.goodsMatchCategory(g.categoryId, categoryId));
     }
-  }, [queryId, category]);
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(g => g.name.toLowerCase().includes(q));
+    }
+    setGoods(list);
+    setCategories(services.category.getAll());
+  }, [categoryId, searchQuery, services]);
 
-  const active = category.getById(activeId);
-
-  const goods = useMemo(() => {
-    const list = good.getGoodsByCategory(activeId);
-    if (!activeSubId) return list;
-    return list.filter((g) => g.categoryId === activeId);
-  }, [good, activeId, activeSubId]);
+  const activeMeta = categoryId ? services.category.findCategory(categoryId) : null;
+  const parentId = activeMeta?.isParent ? activeMeta.id : activeMeta?.parentId;
+  const parentCategory = parentId ? services.category.getById(parentId) : null;
+  const subCategories = parentCategory?.children || [];
+  const pageTitle = searchQuery
+    ? `搜索: "${searchQuery}"`
+    : activeMeta
+      ? (activeMeta.isParent ? activeMeta.name : `${activeMeta.parentName} · ${activeMeta.name}`)
+      : "全部分类";
 
   return (
-    <div className="mall-page">
-      <header className="mall-page__header">分类</header>
-      <div className="category-page">
-        <aside className="category-sidebar">
-          {categories.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className={`category-sidebar__item${c.id === activeId ? ' category-sidebar__item--active' : ''}`}
-              onClick={() => {
-                setActiveId(c.id);
-                setActiveSubId(null);
-              }}
+    <div className="category-page container">
+      <div className="category-sidebar">
+        <h3 className="category-sidebar-title">商品分类</h3>
+        <Link to="/category" className={`category-link ${!categoryId ? "active" : ""}`}>全部分类</Link>
+        {categories.map(cat => (
+          <Link
+            key={cat.id}
+            to={`/category/${cat.id}`}
+            className={`category-link ${services.category.getParentId(categoryId || '') === cat.id ? "active" : ""}`}
+          >
+            <span>{cat.icon}</span> {cat.name}
+          </Link>
+        ))}
+      </div>
+      <div className="category-main">
+        <div className="category-header">
+          <h2>{pageTitle}</h2>
+          <span className="category-count">{goods.length} 件商品</span>
+        </div>
+        {subCategories.length > 0 && (
+          <div className="category-subnav">
+            <Link
+              to={`/category/${parentId}`}
+              className={`category-sub-link ${activeMeta?.isParent ? "active" : ""}`}
             >
-              {c.name}
-            </button>
-          ))}
-        </aside>
-        <div className="category-content">
-          <h3 className="category-content__title">{active?.name}</h3>
-          <div className="category-subgrid">
-            {active?.children?.map((sub) => (
-              <button
+              全部
+            </Link>
+            {subCategories.map((sub) => (
+              <Link
                 key={sub.id}
-                type="button"
-                className={`category-subitem${activeSubId === sub.id ? ' category-subitem--active' : ''}`}
-                onClick={() => setActiveSubId(sub.id)}
+                to={`/category/${sub.id}`}
+                className={`category-sub-link ${categoryId === sub.id ? "active" : ""}`}
               >
-                <div className="category-subitem__icon">{sub.name[0]}</div>
-                <span>{sub.name}</span>
-              </button>
+                {sub.name}
+              </Link>
             ))}
           </div>
-          <section className="category-goods-section">
-            <h4 className="category-goods-section__title">
-              相关商品
-              <small>（{goods.length} 件）</small>
-            </h4>
-            {goods.length === 0 ? (
-              <p className="category-goods-empty">该分类下暂无商品</p>
-            ) : (
-              <div className="product-grid category-product-grid">
-                {goods.map((g) => (
-                  <ProductCard key={g.id} product={g} />
-                ))}
-              </div>
-            )}
-          </section>
-          <Link to="/" className="category-back-link">返回首页浏览更多</Link>
-        </div>
+        )}
+        <ProductGrid goods={goods} />
       </div>
     </div>
   );
-};
-
-export default CategoryPage;
+}

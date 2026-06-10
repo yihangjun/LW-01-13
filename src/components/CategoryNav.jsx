@@ -13,7 +13,7 @@ const CategoryNav = ({ limit = 8 }) => {
   return (
     <nav className="category-nav" aria-label="商品分类">
       {list.map((c, i) => (
-        <Link key={c.id} to={`/category?id=${c.id}`} className="category-nav__item">
+        <Link key={c.id} to={`/category/${c.id}`} className="category-nav__item">
           <span
             className="category-nav__icon"
             style={{ background: COLORS[i % COLORS.length] }}

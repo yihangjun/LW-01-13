@@ -10,13 +10,13 @@
 
 | 姓名 | 学号 | 分工与产出 | 贡献占比 |
 |------|------|-----------|---------|
-| 周一航 | 23301174 | 项目架构、Gerrit 管理、登录模块、Spec Kit 流程、Report 撰写 | 22% |
-| 罗督星 | 23301159 | 数据层 Service、localStorage 持久化、订单服务 | 20% |
-| 张喆 | 23301170 | 首页、分类页、商品详情、购物车 | 20% |
-| 周锐 | 23301173 | 购买全链路（下单、支付、订单页）、我的页面 | 20% |
-| 王艺晓 | 21301167 | 后台管理端、权限、响应式样式、PPT | 18% |
+| 周一航 | 23301174 |  |  |
+| 罗督星 | 23301159 |  |  |
+| 张喆 | 23301170 |  |  |
+| 周锐 | 23301173 |  |  |
+| 王艺晓 | 21301167 |  |  |
 
-**分工说明：** 本项目使用 Spec Kit 进行规格驱动开发，规格文档保存在本地（不提交仓库），代码统一通过 Gerrit 评审合入。
+**分工说明：** 代码统一通过 Gerrit 评审合入。
 
 ---
 
@@ -135,5 +135,4 @@ mock/        banners, categories, addresses
 | Gerrit push 报 no new changes | 先添加代码并 commit，再 push 到 refs/for/master |
 | 旧版 order 数据结构不兼容 | orderService 增加 `_migrateLegacyOrders` 迁移 |
 | 首页无商品（旧 localStorage 缺 isHot） | `goodListVersion` 版本号 + `initAppData` 自动修复数据 |
-| Spec Kit 文件不宜提交 | 将 `.specify/`、`specs/`、`.cursor/skills/` 加入 .gitignore |
 | 体验账号不明确 | 默认账号 member/123456，点击「获取体验账号」填入并自动登录 |

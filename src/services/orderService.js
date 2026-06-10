@@ -72,6 +72,22 @@ class OrderService {
       .sort((a, b) => b.id - a.id);
   }
 
+  /** 兼容同学版订单列表 API */
+  getOrdersByUserId(userId) {
+    const key = String(userId);
+    return this.list
+      .filter((o) => o.userAccount === key || String(o.userId) === key)
+      .sort((a, b) => b.id - a.id);
+  }
+
+  cancelOrder(orderId) {
+    const order = this.getOrderById(orderId);
+    if (!order || order.status !== ORDER_STATUS.UNPAID) return false;
+    order.status = ORDER_STATUS.CLOSED;
+    this._saveData();
+    return true;
+  }
+
   getAllOrders() {
     return [...this.list].sort((a, b) => b.id - a.id);
   }
