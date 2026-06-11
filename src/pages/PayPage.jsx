@@ -47,7 +47,7 @@ export default function PayPage() {
 
   useEffect(() => {
     if (countdown === 0 && order && order.status === ORDER_STATUS.UNPAID) {
-      services.order.cancelOrder(parsedId);
+      services.order.cancelOrder(parsedId).catch(() => {});
       setCancelled(true);
       toast("订单已超时取消", "warning");
     }
@@ -63,15 +63,16 @@ export default function PayPage() {
 
   const handlePay = () => {
     setPaying(true);
-    setTimeout(() => {
-      const success = services.order.payOrder(parsedId);
-      setPaying(false);
-      if (success) {
+    setTimeout(async () => {
+      try {
+        await services.order.payOrder(parsedId);
         setPaid(true);
         toast("支付成功！", "success");
         setTimeout(() => navigate(`/order-detail/${order.id}`), 1500);
-      } else {
-        toast("支付失败，请重试", "error");
+      } catch (err) {
+        toast(err.message || "支付失败，请重试", "error");
+      } finally {
+        setPaying(false);
       }
     }, 2000);
   };

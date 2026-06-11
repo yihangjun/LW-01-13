@@ -1,72 +1,70 @@
-class CartService {
-  items = [];
+import { request } from '../utils/api';
 
-  constructor() {
-    this._loadData();
-  }
+const GUEST_KEY = 'cartList';
 
-  getItems() {
-    return [...this.items];
-  }
-
-  addItem(goodId, count = 1) {
-    const id = Number(goodId);
-    const existing = this.items.find((i) => i.goodId === id);
+function mergeItems(local = [], remote = []) {
+  const map = new Map(remote.map((item) => [Number(item.goodId), { ...item }]));
+  local.forEach((item) => {
+    const id = Number(item.goodId);
+    const existing = map.get(id);
     if (existing) {
-      existing.count += count;
+      map.set(id, {
+        ...existing,
+        count: existing.count + item.count,
+        selected: existing.selected || item.selected,
+      });
     } else {
-      this.items.push({ goodId: id, count, selected: true });
+      map.set(id, { ...item, goodId: id });
     }
-    this._saveData();
-  }
+  });
+  return [...map.values()];
+}
 
-  updateCount(goodId, count) {
-    const id = Number(goodId);
-    const item = this.items.find((i) => i.goodId === id);
-    if (!item) return;
-    if (count <= 0) {
-      this.removeItem(id);
-      return;
+class CartService {
+  async load(userAccount) {
+    if (!userAccount) {
+      return this.loadLocal();
     }
-    item.count = count;
-    this._saveData();
+    const res = await request(`/carts/${encodeURIComponent(userAccount)}`);
+    const remote = res.data || [];
+    const local = this.loadLocal();
+    if (local.length === 0) {
+      return remote;
+    }
+    const merged = mergeItems(local, remote);
+    await this.save(userAccount, merged);
+    this.saveLocal([]);
+    return merged;
   }
 
-  removeItem(goodId) {
-    const id = Number(goodId);
-    this.items = this.items.filter((i) => i.goodId !== id);
-    this._saveData();
-  }
-
-  toggleSelect(goodId) {
-    const item = this.items.find((i) => i.goodId === Number(goodId));
-    if (item) {
-      item.selected = !item.selected;
-      this._saveData();
+  loadLocal() {
+    try {
+      const raw = localStorage.getItem(GUEST_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
     }
   }
 
-  selectAll(selected) {
-    this.items.forEach((i) => { i.selected = selected; });
-    this._saveData();
+  saveLocal(items) {
+    localStorage.setItem(GUEST_KEY, JSON.stringify(items));
   }
 
-  clear() {
-    this.items = [];
-    this._saveData();
+  async save(userAccount, items) {
+    if (!userAccount) {
+      this.saveLocal(items);
+      return items;
+    }
+    const res = await request(`/carts/${encodeURIComponent(userAccount)}`, {
+      method: 'PUT',
+      body: { items },
+    });
+    this.saveLocal(items);
+    return res.data || items;
   }
 
-  getSelectedItems() {
-    return this.items.filter((i) => i.selected);
-  }
-
-  _saveData() {
-    localStorage.setItem('cartList', JSON.stringify(this.items));
-  }
-
-  _loadData() {
-    const raw = localStorage.getItem('cartList');
-    this.items = raw ? JSON.parse(raw) : [];
+  async clear(userAccount) {
+    return this.save(userAccount, []);
   }
 }
 

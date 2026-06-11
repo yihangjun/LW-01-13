@@ -1,64 +1,81 @@
 import { ORDER_STATUS } from '../constants/orderStatus';
-import { defaultAddress } from '../mock/addresses';
+import { request } from '../utils/api';
 
 class OrderService {
   list = [];
+  ready = false;
 
-  constructor() {
-    this._loadData();
+  async init() {
+    const res = await request('/orders');
+    this.list = res.data || [];
+    this.ready = true;
+    return this.list;
   }
 
-  createOrder({ userAccount, items, address, total }) {
-    const maxId = this.list.reduce((max, item) => Math.max(max, item.id), 0);
-    const order = {
-      id: maxId + 1,
-      orderNo: `${Date.now()}`,
-      userAccount,
-      items,
-      address: address || { ...defaultAddress },
-      total,
-      status: ORDER_STATUS.UNPAID,
-      createTime: new Date().toLocaleString(),
-      payTime: null,
-      payMethod: null,
-      source: 'APP订单',
-    };
+  async createOrder({ userAccount, items, address, total }) {
+    const res = await request('/orders', {
+      method: 'POST',
+      body: { userAccount, items, address, total },
+    });
+    const order = res.data;
     this.list.push(order);
-    this._saveData();
     return order;
   }
 
-  payOrder(orderId, payMethod = 'alipay') {
+  async payOrder(orderId, payMethod = 'alipay') {
     const order = this.getOrderById(orderId);
-    if (!order || order.status !== ORDER_STATUS.UNPAID) return false;
+    if (!order || order.status !== ORDER_STATUS.UNPAID) {
+      throw new Error('订单状态不允许支付');
+    }
+    const res = await request(`/orders/${orderId}/pay`, {
+      method: 'PATCH',
+      body: { payMethod },
+    });
+    if (!res.ok) {
+      throw new Error('支付失败');
+    }
     order.status = ORDER_STATUS.PAID;
     order.payTime = new Date().toLocaleString();
     order.payMethod = payMethod;
-    this._saveData();
     return true;
   }
 
-  shipOrder(orderId) {
+  async shipOrder(orderId) {
     const order = this.getOrderById(orderId);
-    if (!order || order.status !== ORDER_STATUS.PAID) return false;
+    if (!order || order.status !== ORDER_STATUS.PAID) {
+      throw new Error('订单状态不允许发货');
+    }
+    const res = await request(`/orders/${orderId}/ship`, { method: 'PATCH' });
+    if (!res.ok) {
+      throw new Error('发货失败');
+    }
     order.status = ORDER_STATUS.SHIPPED;
-    this._saveData();
     return true;
   }
 
-  completeOrder(orderId) {
+  async completeOrder(orderId) {
     const order = this.getOrderById(orderId);
-    if (!order || order.status !== ORDER_STATUS.SHIPPED) return false;
+    if (!order || order.status !== ORDER_STATUS.SHIPPED) {
+      throw new Error('订单状态不允许完成');
+    }
+    const res = await request(`/orders/${orderId}/complete`, { method: 'PATCH' });
+    if (!res.ok) {
+      throw new Error('操作失败');
+    }
     order.status = ORDER_STATUS.COMPLETED;
-    this._saveData();
     return true;
   }
 
-  closeOrder(orderId) {
+  async closeOrder(orderId) {
     const order = this.getOrderById(orderId);
-    if (!order) return false;
+    if (!order) {
+      throw new Error('订单不存在');
+    }
+    const res = await request(`/orders/${orderId}/close`, { method: 'PATCH' });
+    if (!res.ok) {
+      throw new Error('关闭订单失败');
+    }
     order.status = ORDER_STATUS.CLOSED;
-    this._saveData();
     return true;
   }
 
@@ -72,7 +89,6 @@ class OrderService {
       .sort((a, b) => b.id - a.id);
   }
 
-  /** 兼容同学版订单列表 API */
   getOrdersByUserId(userId) {
     const key = String(userId);
     return this.list
@@ -80,11 +96,16 @@ class OrderService {
       .sort((a, b) => b.id - a.id);
   }
 
-  cancelOrder(orderId) {
+  async cancelOrder(orderId) {
     const order = this.getOrderById(orderId);
-    if (!order || order.status !== ORDER_STATUS.UNPAID) return false;
+    if (!order || order.status !== ORDER_STATUS.UNPAID) {
+      throw new Error('订单状态不允许取消');
+    }
+    const res = await request(`/orders/${orderId}/cancel`, { method: 'PATCH' });
+    if (!res.ok) {
+      throw new Error('取消订单失败');
+    }
     order.status = ORDER_STATUS.CLOSED;
-    this._saveData();
     return true;
   }
 
@@ -92,41 +113,10 @@ class OrderService {
     return [...this.list].sort((a, b) => b.id - a.id);
   }
 
-  deleteOrder(orderId) {
-    this.list = this.list.filter((o) => o.id !== Number(orderId));
-    this._saveData();
-  }
-
-  _saveData() {
-    localStorage.setItem('orderList', JSON.stringify(this.list));
-  }
-
-  _loadData() {
-    const list = localStorage.getItem('orderList');
-    if (list) {
-      this.list = JSON.parse(list);
-      this._migrateLegacyOrders();
-    } else {
-      this.list = [];
-      this._saveData();
-    }
-  }
-
-  _migrateLegacyOrders() {
-    this.list = this.list.map((o) => {
-      if (o.items) return o;
-      return {
-        ...o,
-        userAccount: o.userAccount || 'member',
-        items: o.goodId
-          ? [{ goodId: o.goodId, count: 1, price: o.price, name: `商品${o.goodId}` }]
-          : [],
-        address: o.address || { ...defaultAddress },
-        total: o.total ?? o.price ?? 0,
-        source: o.source || 'APP订单',
-      };
-    });
-    this._saveData();
+  async deleteOrder(orderId) {
+    const numId = Number(orderId);
+    await request(`/orders/${numId}`, { method: 'DELETE' });
+    this.list = this.list.filter((o) => o.id !== numId);
   }
 }
 

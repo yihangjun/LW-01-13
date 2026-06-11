@@ -12,7 +12,7 @@ const RegisterPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -22,7 +22,7 @@ const RegisterPage = () => {
       return;
     }
 
-    const result = register(username, password);
+    const result = await register(username, password);
     if (result.ok) {
       setSuccess(result.message);
       setTimeout(() => navigate('/login', { replace: true }), 1200);

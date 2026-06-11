@@ -1,5 +1,6 @@
 import { useContext, useMemo, useState } from 'react';
 import { ServiceContext } from '../../contexts/ServiceContext';
+import { useToast } from '../../components/Toast';
 import AdminModal from '../../components/admin/AdminModal';
 import AdminConfirm from '../../components/admin/AdminConfirm';
 import './Admin.css';
@@ -17,6 +18,7 @@ function loadCategoryRows(category) {
 }
 
 const AdminCategoriesPage = () => {
+  const toast = useToast();
   const { category, admin } = useContext(ServiceContext);
   const [categoryRows, setCategoryRows] = useState(() => loadCategoryRows(category));
   const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify(loadCategoryRows(category)));
@@ -129,11 +131,15 @@ const AdminCategoriesPage = () => {
     setEditingId(null);
   };
 
-  const handleSave = () => {
-    category.replaceAll(categoryRows);
-    const snapshot = JSON.stringify(categoryRows);
-    setSavedSnapshot(snapshot);
-    showSavedHint();
+  const handleSave = async () => {
+    try {
+      await category.replaceAll(categoryRows);
+      const snapshot = JSON.stringify(categoryRows);
+      setSavedSnapshot(snapshot);
+      showSavedHint();
+    } catch (err) {
+      toast(err.message || '保存失败', 'error');
+    }
   };
 
   const handleReset = () => {

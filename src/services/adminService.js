@@ -3,10 +3,9 @@ import {
   DEFAULT_ADMIN_USERS,
   DEFAULT_ROLES,
 } from '../constants/adminPermissions';
+import { request } from '../utils/api';
 
 const SESSION_KEY = 'mall_admin';
-const USERS_KEY = 'mall_admin_users';
-const ROLES_KEY = 'mall_admin_roles';
 
 function normalizeRoles(roles) {
   return roles.map((r) => {
@@ -18,100 +17,97 @@ function normalizeRoles(roles) {
   });
 }
 
-function loadRoles() {
-  const raw = localStorage.getItem(ROLES_KEY);
-  if (raw) return normalizeRoles(JSON.parse(raw));
-  const roles = DEFAULT_ROLES.map((r) => ({ ...r, permissions: [...r.permissions] }));
-  localStorage.setItem(ROLES_KEY, JSON.stringify(roles));
-  return roles;
-}
-
-function saveRoles(roles) {
-  localStorage.setItem(ROLES_KEY, JSON.stringify(roles));
-}
-
-function loadUsers() {
-  const raw = localStorage.getItem(USERS_KEY);
-  if (raw) return JSON.parse(raw);
-  localStorage.setItem(USERS_KEY, JSON.stringify(DEFAULT_ADMIN_USERS));
-  return DEFAULT_ADMIN_USERS.map((u) => ({ ...u }));
-}
-
-function saveUsers(users) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
-
 class AdminService {
+  roles = [];
+  users = [];
+  ready = false;
+
+  async init() {
+    const [rolesRes, usersRes] = await Promise.all([
+      request('/admin/roles'),
+      request('/admin/users'),
+    ]);
+    this.roles = normalizeRoles(rolesRes.data || []);
+    this.users = usersRes.data || DEFAULT_ADMIN_USERS.map((u) => ({ ...u }));
+    this.ready = true;
+    this.refreshSessionPermissions();
+    return { roles: this.roles, users: this.users };
+  }
+
   getModules() {
     return ADMIN_MODULES;
   }
 
   getRoles() {
-    return loadRoles();
+    return this.roles;
   }
 
   getRoleById(roleId) {
-    return loadRoles().find((r) => r.id === roleId);
+    return this.roles.find((r) => r.id === roleId);
   }
 
-  updateRolePermissions(roleId, permissions) {
-    const roles = loadRoles();
-    const role = roles.find((r) => r.id === roleId);
-    if (!role) return false;
+  async updateRolePermissions(roleId, permissions) {
+    const role = this.roles.find((r) => r.id === roleId);
+    if (!role) {
+      throw new Error('角色不存在');
+    }
+    const res = await request(`/admin/roles/${roleId}/permissions`, {
+      method: 'PUT',
+      body: { permissions },
+    });
+    if (!res.ok) {
+      throw new Error('权限更新失败');
+    }
     role.permissions = permissions;
-    saveRoles(roles);
     return true;
   }
 
   getUsers() {
-    return loadUsers();
+    return this.users;
   }
 
-  addUser(user) {
-    const users = loadUsers();
-    if (users.some((u) => u.username === user.username)) {
-      return { ok: false, message: '用户名已存在' };
+  async addUser(user) {
+    if (this.users.some((u) => u.username === user.username)) {
+      throw new Error('用户名已存在');
     }
-    users.push(user);
-    saveUsers(users);
+    await request('/admin/users', { method: 'POST', body: user });
+    this.users.push(user);
     return { ok: true };
   }
 
-  updateUser(username, patch) {
-    const users = loadUsers();
-    const idx = users.findIndex((u) => u.username === username);
-    if (idx === -1) return { ok: false, message: '用户不存在' };
-    users[idx] = { ...users[idx], ...patch };
-    saveUsers(users);
+  async updateUser(username, patch) {
+    const idx = this.users.findIndex((u) => u.username === username);
+    if (idx === -1) {
+      throw new Error('用户不存在');
+    }
+    const res = await request(`/admin/users/${username}`, { method: 'PUT', body: patch });
+    if (!res.ok) {
+      throw new Error(res.message || '更新失败');
+    }
+    this.users[idx] = { ...this.users[idx], ...patch };
     return { ok: true };
   }
 
-  deleteUser(username) {
+  async deleteUser(username) {
     if (username === 'admin') {
-      return { ok: false, message: '不能删除默认超级管理员' };
+      throw new Error('不能删除默认超级管理员');
     }
-    saveUsers(loadUsers().filter((u) => u.username !== username));
+    await request(`/admin/users/${username}`, { method: 'DELETE' });
+    this.users = this.users.filter((u) => u.username !== username);
     return { ok: true };
   }
 
   login(username, password) {
-    const user = loadUsers().find(
-      (u) => u.username === username.trim() && u.password === password,
-    );
-    if (!user) return { ok: false, message: '账号或密码错误' };
-
-    const role = this.getRoleById(user.roleId);
-    if (!role) return { ok: false, message: '角色配置异常' };
-
-    const session = {
-      username: user.username,
-      name: user.name,
-      roleId: user.roleId,
-      roleName: role.name,
-      permissions: [...role.permissions],
-    };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    return { ok: true, user: session };
+    return request('/admin/login', {
+      method: 'POST',
+      body: { username, password },
+    })
+      .then((res) => {
+        const session = res.data;
+        localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+        return { ok: true, user: session };
+      })
+      .catch((err) => ({ ok: false, message: err.message || '账号或密码错误' }));
   }
 
   logout() {

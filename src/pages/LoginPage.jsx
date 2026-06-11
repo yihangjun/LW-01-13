@@ -11,10 +11,10 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [demoLoading, setDemoLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-    const result = login(username, password);
+    const result = await login(username, password);
     if (result.ok) {
       navigate('/user', { replace: true });
     } else {
@@ -25,8 +25,7 @@ const LoginPage = () => {
   const handleDemoLogin = async () => {
     setError('');
     setDemoLoading(true);
-    await new Promise((r) => setTimeout(r, 400));
-    const result = loginWithDemo();
+    const result = await loginWithDemo();
     setDemoLoading(false);
     if (result.ok) {
       navigate('/', { replace: true });

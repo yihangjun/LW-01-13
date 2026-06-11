@@ -1,17 +1,20 @@
-import { defaultCategories } from '../mock/categories';
+import { request } from '../utils/api';
 
 class CategoryService {
   list = [];
+  ready = false;
 
-  constructor() {
-    this._loadData();
+  async init() {
+    const res = await request('/categories');
+    this.list = res.data || [];
+    this.ready = true;
+    return this.list;
   }
 
   getList() {
     return this.list;
   }
 
-  /** 商城前台扁平分类（含 icon），兼容同学版 UI */
   getAll() {
     const icons = {
       '1': '👔',
@@ -32,7 +35,6 @@ class CategoryService {
     return this.list.find((c) => c.id === id);
   }
 
-  /** 解析主分类或子分类 */
   findCategory(id) {
     if (!id) return null;
     for (const parent of this.list) {
@@ -59,7 +61,6 @@ class CategoryService {
     return found.parentId || found.id;
   }
 
-  /** 商品分类是否匹配筛选（支持主分类与子分类） */
   goodsMatchCategory(goodCategoryId, filterCategoryId) {
     if (!filterCategoryId) return true;
     if (!goodCategoryId) return false;
@@ -88,46 +89,34 @@ class CategoryService {
     };
   }
 
-  add(category) {
+  async add(category) {
     const exists = this.list.some((c) => c.id === category.id);
     if (exists) throw new Error('分类 ID 已存在');
     this.list.push(category);
-    this._saveData();
+    await this.replaceAll(this.list);
   }
 
-  update(category) {
+  async update(category) {
     this.list = this.list.map((c) =>
       c.id === category.id ? { ...c, ...category } : c,
     );
-    this._saveData();
+    await this.replaceAll(this.list);
   }
 
-  delete(id) {
+  async delete(id) {
     this.list = this.list.filter((c) => c.id !== id);
-    this._saveData();
+    await this.replaceAll(this.list);
   }
 
-  replaceAll(categories) {
+  async replaceAll(categories) {
     this.list = categories.map((c) => ({
       id: c.id,
       name: c.name,
       children: (c.children || []).map((ch) => ({ id: ch.id, name: ch.name })),
     }));
-    this._saveData();
-  }
-
-  _saveData() {
-    localStorage.setItem('categoryList', JSON.stringify(this.list));
-  }
-
-  _loadData() {
-    const raw = localStorage.getItem('categoryList');
-    if (raw) {
-      this.list = JSON.parse(raw);
-    } else {
-      this.list = defaultCategories;
-      this._saveData();
-    }
+    const res = await request('/categories', { method: 'PUT', body: this.list });
+    this.list = res.data || this.list;
+    return this.list;
   }
 }
 

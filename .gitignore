@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Backend runtime data
+server/data/db.json

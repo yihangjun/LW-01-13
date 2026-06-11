@@ -19,9 +19,10 @@ const AdminLoginPage = () => {
     navigate(target, { replace: true });
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const result = admin.login(username, password);
+    setError('');
+    const result = await admin.login(username, password);
     if (result.ok) {
       goAfterLogin(result.user);
     } else {
@@ -32,9 +33,8 @@ const AdminLoginPage = () => {
   const handleDemoLogin = async () => {
     setError('');
     setDemoLoading(true);
-    await new Promise((r) => setTimeout(r, 400));
     const demo = admin.getDemoAccount();
-    const result = admin.login(demo.username, demo.password);
+    const result = await admin.login(demo.username, demo.password);
     setDemoLoading(false);
     if (result.ok) {
       goAfterLogin(result.user);

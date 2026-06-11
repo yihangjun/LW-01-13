@@ -1,11 +1,13 @@
 import { useContext, useMemo, useState } from 'react';
 import { ServiceContext } from '../../contexts/ServiceContext';
+import { useToast } from '../../components/Toast';
 import { ORDER_STATUS_TEXT } from '../../constants/orderStatus';
 import AdminModal from '../../components/admin/AdminModal';
 import AdminConfirm from '../../components/admin/AdminConfirm';
 import './Admin.css';
 
 const AdminOrdersPage = () => {
+  const toast = useToast();
   const { order, admin } = useContext(ServiceContext);
   const [keyword, setKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -160,10 +162,15 @@ const AdminOrdersPage = () => {
         title="订单发货"
         message={`确认对订单 ${shipTarget?.orderNo ?? ''} 执行发货操作？`}
         onCancel={() => setShipOrderId(null)}
-        onConfirm={() => {
-          if (shipOrderId) order.shipOrder(shipOrderId);
-          setShipOrderId(null);
-          bump();
+        onConfirm={async () => {
+          if (!shipOrderId) return;
+          try {
+            await order.shipOrder(shipOrderId);
+            setShipOrderId(null);
+            bump();
+          } catch (err) {
+            toast(err.message || '发货失败', 'error');
+          }
         }}
       />
 
@@ -171,10 +178,15 @@ const AdminOrdersPage = () => {
         open={!!deleteTarget}
         message={`确定删除订单 ${deleteTarget?.orderNo ?? ''} 吗？`}
         onCancel={() => setDeleteOrderId(null)}
-        onConfirm={() => {
-          if (deleteOrderId) order.deleteOrder(deleteOrderId);
-          setDeleteOrderId(null);
-          bump();
+        onConfirm={async () => {
+          if (!deleteOrderId) return;
+          try {
+            await order.deleteOrder(deleteOrderId);
+            setDeleteOrderId(null);
+            bump();
+          } catch (err) {
+            toast(err.message || '删除失败', 'error');
+          }
         }}
       />
     </>

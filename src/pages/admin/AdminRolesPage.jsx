@@ -1,5 +1,6 @@
 import { useContext, useCallback, useMemo, useState } from 'react';
 import { ServiceContext } from '../../contexts/ServiceContext';
+import { useToast } from '../../components/Toast';
 import AdminModal from '../../components/admin/AdminModal';
 import AdminConfirm from '../../components/admin/AdminConfirm';
 import './Admin.css';
@@ -22,6 +23,7 @@ function loadRoleRows(admin) {
 }
 
 const AdminRolesPage = () => {
+  const toast = useToast();
   const { admin } = useContext(ServiceContext);
   const [roleRows, setRoleRows] = useState(() => loadRoleRows(admin));
   const [users, setUsers] = useState(() => (admin.getUsers() || []).filter((u) => u?.username));
@@ -68,13 +70,17 @@ const AdminRolesPage = () => {
     );
   };
 
-  const handleSavePermissions = () => {
-    roleRows.forEach((role) => {
-      admin.updateRolePermissions(role.id, [...role.permissions]);
-    });
-    admin.refreshSessionPermissions();
-    setSavedSnapshot(JSON.stringify(roleRows));
-    showSavedHint();
+  const handleSavePermissions = async () => {
+    try {
+      await Promise.all(
+        roleRows.map((role) => admin.updateRolePermissions(role.id, [...role.permissions])),
+      );
+      admin.refreshSessionPermissions();
+      setSavedSnapshot(JSON.stringify(roleRows));
+      showSavedHint();
+    } catch (err) {
+      toast(err.message || '权限保存失败', 'error');
+    }
   };
 
   const handleResetPermissions = () => {
@@ -104,7 +110,7 @@ const AdminRolesPage = () => {
     setUserModalOpen(true);
   };
 
-  const handleUserSubmit = () => {
+  const handleUserSubmit = async () => {
     if (!userForm.username.trim() || !userForm.name.trim()) {
       setFormError('请填写用户名和姓名');
       return;
@@ -119,17 +125,20 @@ const AdminRolesPage = () => {
       name: userForm.name.trim(),
       roleId: userForm.roleId,
     };
-    const result = editingUsername
-      ? admin.updateUser(editingUsername, payload)
-      : admin.addUser(payload);
-    if (!result.ok) {
-      setFormError(result.message);
-      return;
+    try {
+      if (editingUsername) {
+        await admin.updateUser(editingUsername, payload);
+      } else {
+        await admin.addUser(payload);
+      }
+      setUserModalOpen(false);
+      setEditingUsername(null);
+      reloadUsers();
+      showSavedHint();
+    } catch (err) {
+      setFormError(err.message || '保存失败');
+      toast(err.message || '保存失败', 'error');
     }
-    setUserModalOpen(false);
-    setEditingUsername(null);
-    reloadUsers();
-    showSavedHint();
   };
 
   if (!hasPermission) {
@@ -314,11 +323,16 @@ const AdminRolesPage = () => {
         open={!!deleteUserTarget}
         message={`确定删除用户「${deleteUserTarget?.username ?? ''}」吗？`}
         onCancel={() => setDeleteUsername(null)}
-        onConfirm={() => {
-          if (deleteUsername) admin.deleteUser(deleteUsername);
-          setDeleteUsername(null);
-          reloadUsers();
-          showSavedHint();
+        onConfirm={async () => {
+          if (!deleteUsername) return;
+          try {
+            await admin.deleteUser(deleteUsername);
+            setDeleteUsername(null);
+            reloadUsers();
+            showSavedHint();
+          } catch (err) {
+            toast(err.message || '删除失败', 'error');
+          }
         }}
       />
     </>

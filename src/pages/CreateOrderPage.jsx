@@ -45,7 +45,7 @@ export default function CreateOrderPage() {
     setTotal(items.reduce((s, i) => s + i.price * i.count, 0));
   }, [goodId, services, navigate]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!address.trim()) { toast("请填写收货地址", "warning"); return; }
 
     for (const item of orderItems) {
@@ -56,18 +56,22 @@ export default function CreateOrderPage() {
       }
     }
 
-    updateUser({ address: address.trim() });
-    const order = services.order.createOrder({
-      userAccount: user.username,
-      items: orderItems,
-      total,
-      address: { ...defaultAddress, detail: address.trim() },
-    });
-    if (!goodId) {
-      clearSelected();
-      localStorage.removeItem("checkoutItems");
+    try {
+      await updateUser({ address: address.trim() });
+      const order = await services.order.createOrder({
+        userAccount: user.username,
+        items: orderItems,
+        total,
+        address: { ...defaultAddress, detail: address.trim() },
+      });
+      if (!goodId) {
+        clearSelected();
+        localStorage.removeItem("checkoutItems");
+      }
+      navigate(`/pay/${order.id}`);
+    } catch (err) {
+      toast(err.message || "创建订单失败", "error");
     }
-    navigate(`/pay/${order.id}`);
   };
 
   return (

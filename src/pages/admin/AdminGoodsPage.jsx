@@ -1,5 +1,6 @@
 import { useContext, useMemo, useState } from 'react';
 import { ServiceContext } from '../../contexts/ServiceContext';
+import { useToast } from '../../components/Toast';
 import { GOODS_TAG_HELP } from '../../constants/adminPermissions';
 import AdminModal from '../../components/admin/AdminModal';
 import AdminConfirm from '../../components/admin/AdminConfirm';
@@ -23,6 +24,7 @@ const emptyForm = () => ({
 });
 
 const AdminGoodsPage = () => {
+  const toast = useToast();
   const { good, category, admin } = useContext(ServiceContext);
   const [keyword, setKeyword] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -86,7 +88,7 @@ const AdminGoodsPage = () => {
     setModalOpen(true);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.name.trim()) {
       setFormError('请输入商品名称');
       return;
@@ -110,14 +112,19 @@ const AdminGoodsPage = () => {
       sku: form.sku.trim() || `SKU-${Date.now()}`,
       spec: form.spec.trim() || '默认规格',
     };
-    if (editing) {
-      good.updateGood({ ...editing, ...payload });
-    } else {
-      good.addGood(payload);
+    try {
+      if (editing) {
+        await good.updateGood({ ...editing, ...payload });
+      } else {
+        await good.addGood(payload);
+      }
+      setModalOpen(false);
+      setEditingId(null);
+      bump();
+    } catch (err) {
+      setFormError(err.message || '保存失败');
+      toast(err.message || '保存失败', 'error');
     }
-    setModalOpen(false);
-    setEditingId(null);
-    bump();
   };
 
   const getCategoryName = (id) => category.getDisplayInfo(id)?.label || id;
@@ -204,17 +211,26 @@ const AdminGoodsPage = () => {
                   <td>
                     <div className="admin-tags">
                       <label className="admin-toggle" title={GOODS_TAG_HELP.onSale}>
-                        <input type="checkbox" checked={g.onSale} onChange={() => { good.toggleField(g.id, 'onSale'); bump(); }} />
+                        <input type="checkbox" checked={g.onSale} onChange={async () => {
+                          try { await good.toggleField(g.id, 'onSale'); bump(); }
+                          catch (err) { toast(err.message || '操作失败', 'error'); }
+                        }} />
                         <span className="admin-toggle__slider" />
                         <span className="admin-toggle__label">上架</span>
                       </label>
                       <label className="admin-toggle" title={GOODS_TAG_HELP.isNew}>
-                        <input type="checkbox" checked={g.isNew} onChange={() => { good.toggleField(g.id, 'isNew'); bump(); }} />
+                        <input type="checkbox" checked={g.isNew} onChange={async () => {
+                          try { await good.toggleField(g.id, 'isNew'); bump(); }
+                          catch (err) { toast(err.message || '操作失败', 'error'); }
+                        }} />
                         <span className="admin-toggle__slider" />
                         <span className="admin-toggle__label">新品</span>
                       </label>
                       <label className="admin-toggle" title={GOODS_TAG_HELP.isRecommended}>
-                        <input type="checkbox" checked={g.isRecommended} onChange={() => { good.toggleField(g.id, 'isRecommended'); bump(); }} />
+                        <input type="checkbox" checked={g.isRecommended} onChange={async () => {
+                          try { await good.toggleField(g.id, 'isRecommended'); bump(); }
+                          catch (err) { toast(err.message || '操作失败', 'error'); }
+                        }} />
                         <span className="admin-toggle__slider" />
                         <span className="admin-toggle__label">推荐</span>
                       </label>
@@ -307,10 +323,15 @@ const AdminGoodsPage = () => {
         open={!!deleteTarget}
         message={`确定删除商品「${deleteTarget?.name ?? ''}」吗？`}
         onCancel={() => setDeleteId(null)}
-        onConfirm={() => {
-          if (deleteId) good.deleteGood(deleteId);
-          setDeleteId(null);
-          bump();
+        onConfirm={async () => {
+          if (!deleteId) return;
+          try {
+            await good.deleteGood(deleteId);
+            setDeleteId(null);
+            bump();
+          } catch (err) {
+            toast(err.message || '删除失败', 'error');
+          }
         }}
       />
     </>

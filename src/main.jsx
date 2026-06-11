@@ -1,10 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import { initAppData } from './utils/initAppData';
-
-initAppData();
-
 import { RouterProvider } from 'react-router';
 import router from './router';
 import { ServiceProvider } from './contexts/ServiceContext';
