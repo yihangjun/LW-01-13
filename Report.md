@@ -1,154 +1,149 @@
 # 第四次作业报告
 
-**姓名：** 王艺晓  
-**学号：** 21301167  
+**姓名：** 小明  
+**学号：** 23300000  
 **作业名称：** React 商城系统
 
 ---
 
 ## 1. 组员分工
 
-> 由组长填写，列出每位成员的具体产出与贡献占比。贡献占比总和应为 100%。
-
 | 姓名 | 学号 | 分工与产出 | 贡献占比 |
 |------|------|-----------|---------|
-| 王艺晓（组长） | 21301167 | 产品设计、UI设计、前台编码、后台编码、测试、文档撰写 | 100% |
+| 周一航 | 23301174 |  |  |
+| 罗督星 | 23301159 |  |  |
+| 张喆 | 23301170 |  |  |
+| 周锐 | 23301173 |  |  |
+| 王艺晓 | 21301167 |  |  |
 
-**分工说明（参考分类）：** 产品设计、UI 设计、前台编码、后台编码、PPT 制作、测试、文档撰写等。  
-**注意：** 非编码工作（产品设计、PPT、文档等）同样计入贡献。
+**分工说明：** 代码统一通过 Gerrit 评审合入。
 
 ---
 
 ## 2. 项目结构
 
-请说明你的项目结构与组件拆分方式：
-
 ```
-App（根组件，含 <Outlet /> 渲染子路由）
-├── HomePage           ← 商城主页面（搜索框、轮播图、热门商品）
-├── LoginPage          ← 用户登录/注册页
-├── DetailPage         ← 商品详情页
-├── CreateOrderPage    ← 创建订单页
-├── PayPage            ← 支付页面
-├── OrderListPage      ← 订单列表页
-├── OrderDetailPage    ← 订单详情页
-└── ...                ← 其他页面/组件
+项目根目录/
+├── server/                 ← Node.js + Express 后端 API
+│   ├── index.js
+│   ├── routes/             ← 商品、订单、用户、购物车、后台接口
+│   ├── lib/db.js           ← db.json 读写
+│   └── data/db.json        ← 持久化数据
+├── src/
+│   ├── App.jsx             ← 前台布局（Header + Footer）
+│   ├── router.jsx          ← 前台/后台路由
+│   ├── pages/              ← 商城页面、登录注册、后台管理
+│   ├── components/         ← Header、Footer、ProductGrid、Toast 等
+│   ├── contexts/           ← UserContext、ServiceContext、CartContext
+│   ├── services/           ← 对接 /api 的业务服务
+│   └── utils/api.js        ← 统一 HTTP 请求
+└── tool/                   ← check.cjs、pack.cjs
 ```
-
-各页面/组件职责说明：
 
 | 页面/组件 | 职责 |
 |-----------|------|
-| App | 根组件，包含导航栏和路由出口，根据路由显示不同页面 |
-| HomePage | 商城主页面，展示搜索框和热门商品列表，支持加入购物车 |
-| LoginPage | 用户登录/注册页，实现表单验证和数据持久化 |
-| DetailPage | 商品详情页，展示商品详细信息，支持数量选择和加入购物车/立即购买 |
-| CreateOrderPage | 创建订单页，确认商品信息并生成订单 |
-| PayPage | 支付页面，模拟支付流程，更新订单状态 |
-| OrderListPage | 订单列表页，展示当前用户的所有订单及状态 |
-| OrderDetailPage | 订单详情页，展示订单完整信息和操作按钮 |
-| CartPage | 购物车页面，管理购物车商品，支持增删改查和结算 |
-| UserProfilePage | 个人中心页，查看和编辑用户信息，快捷操作入口 |
-| CategoryPage | 分类页面，按分类浏览商品 |
-| AdminLoginPage | 后台登录页，管理员身份验证 |
-| AdminGoodsPage | 商品管理页，实现商品的增删改查功能 |
+| App | 商城布局容器；登录/注册/后台路径不显示 Header/Footer |
+| Header / Footer | 宽屏顶部导航与页脚 |
+| HomePage | 搜索、轮播、热门商品、分类入口 |
+| CategoryPage | 分类侧栏 + 商品列表 |
+| DetailPage | 商品详情、加购、立即购买 |
+| CartPage | 购物车勾选、改数量、结算 |
+| UserPage | 个人资料编辑、订单入口、后台管理入口 |
+| LoginPage / RegisterPage | 前台登录注册与表单校验 |
+| CreateOrderPage | 确认地址与商品清单、提交订单 |
+| PayPage | 收银台、支付倒计时、模拟扫码支付 |
+| OrderListPage / OrderDetailPage | 订单列表与详情、分页 |
+| AdminLayout | 后台侧边栏与权限菜单 |
+| AdminGoodsPage | 商品 CRUD、上下架与标签开关 |
+| AdminCategoriesPage | 分类与子分类管理 |
+| AdminOrdersPage | 订单筛选、发货、删除 |
+| AdminRolesPage | 角色权限矩阵与后台用户管理 |
+
+---
 
 ## 3. 前台功能实现说明
 
 | 功能模块 | 实现方式 |
 |----------|----------|
-| 商城主页面（搜索框/轮播图/热门商品） | 使用useState管理搜索关键词，实时过滤商品列表；采用Grid布局展示商品卡片，支持悬停效果 |
-| 商品详情页 | 通过useParams获取商品ID，从ServiceContext获取商品数据；实现数量选择器和加入购物车/立即购买功能 |
-| 购物车 | 创建CartContext管理全局购物车状态，使用localStorage持久化；支持增删改查、选中/全选、计算总价等功能 |
-| 创建订单 | 从ServiceContext获取商品和用户信息，调用orderService创建订单，生成唯一订单号 |
-| 支付页面 | 模拟支付流程，点击支付按钮后调用orderService.payOrder更新订单状态为已支付 |
-| 订单列表 | 通过orderService.getOrdersByUserId获取当前用户订单，展示订单摘要信息和状态 |
-| 订单详情 | 展示订单完整信息包括订单号、时间、商品详情、价格等，支持返回订单列表和去支付操作 |
-| 用户登录/注册 | 创建userService管理用户数据，支持注册、登录、登出；使用localStorage持久化用户信息和登录状态 |
+| 商城主页面 | `HomePage` + `SearchBar`/`Carousel`/`ProductGrid`；`goodService` 从 API 拉取商品 |
+| 分类页 | `CategoryPage` + `categoryService`；支持分类筛选与搜索参数 |
+| 购物车 | `CartContext` + `cartService`；登录用户购物车同步至 `/api/carts` |
+| 商品详情 | `DetailPage`；`useParams` 取商品 ID，支持加购与跳转下单 |
+| 创建订单 | `CreateOrderPage`；支持单品与购物车结算，调用 `orderService.createOrder` |
+| 支付页面 | `PayPage`；15 分钟倒计时、模拟二维码、调用 `payOrder` |
+| 订单列表 | `OrderListPage`；按用户账号过滤，带状态筛选与分页 |
+| 订单详情 | `OrderDetailPage`；展示状态流转、地址、商品明细 |
+| 用户登录/注册 | `UserContext` + `/api/users/login`、`/register`；会话缓存于 `mall_user` |
+
+---
 
 ## 4. 后台管理端功能实现说明
 
-> 商品管理、分类管理、订单管理中至少完成一个完整的管理功能。
-
 | 功能模块 | 实现方式 |
 |----------|----------|
-| 后台登录 | 独立的AdminLoginPage，验证用户名是否为admin，检查权限后跳转到商品管理页 |
-| 权限管理 | 在userService中设置role字段区分user和admin角色；AdminGoodsPage中检查用户权限，非管理员自动跳转 |
-| 商品管理 | AdminGoodsPage实现完整的商品CRUD功能：表格展示、添加、编辑、删除；使用goodService的增删改查方法，数据持久化到localStorage |
+| 后台登录 | `/admin/login`；`adminService` 校验 `admin/admin123`、`operator/123456` |
+| 权限管理 | `adminService` RBAC；`AdminRolesPage` 配置角色权限矩阵 |
+| 商品管理 | `AdminGoodsPage` 增删改查、筛选、Modal 表单 |
+| 分类管理 | `AdminCategoriesPage` 分类与子分类编辑、批量保存 |
+| 订单管理 | `AdminOrdersPage` 列表筛选、发货、详情、删除 |
+
+---
 
 ## 5. 路由设计
 
-请说明前台与后台的路由规划：
-
 ```jsx
-const router = createBrowserRouter([
-  {
-    path: "/",
-    Component: App,
-    children: [
-      { path: "/", Component: HomePage },
-      { path: "/home", Component: HomePage },
-      { path: "/login", Component: LoginPage },
-      { path: "/cart", Component: CartPage },
-      { path: "/profile", Component: UserProfilePage },
-      { path: "/category", Component: CategoryPage },
-      { path: "/detail/:goodId", Component: DetailPage },
-      { path: "/createOrder/:goodId", Component: CreateOrderPage },
-      { path: "/pay/:orderId", Component: PayPage },
-      { path: "/orderList", Component: OrderListPage },
-      { path: "/orderDetail/:orderId", Component: OrderDetailPage },
-      // 后台管理路由
-      { path: "/admin/login", Component: AdminLoginPage },
-      { path: "/admin/goods", Component: AdminGoodsPage },
-    ]
-  }
-]);
+// 前台（App 布局）
+/  /category  /category/:categoryId  /cart  /user
+/login  /register  /forgot-password  /detail/:goodId
+/create-order  /create-order/:goodId  /pay/:orderId
+/order-list  /order-detail/:orderId
+
+// 后台（AdminLayout）
+/admin/login
+/admin/goods  /admin/categories  /admin/orders  /admin/roles
 ```
 
-**路由说明：**
-- 前台路由：以 `/` 开头，包含首页、登录、购物车、个人中心、分类、商品详情、订单相关页面
-- 后台路由：以 `/admin` 开头，包含后台登录和商品管理页面
-- App组件作为Layout，根据路径判断是否显示导航栏（后台页面不显示前台导航）
+路由使用 `React.lazy` 懒加载；需登录页面通过 `ProtectedRoute` 守卫。旧 camelCase 路径（如 `/orderList`）重定向至 kebab-case。
+
+**启动方式：**
+
+```bash
+npm run dev:all    # 同时启动前端与后端
+# 或分别执行 npm run server（3001）与 npm run dev（5173）
+```
+
+---
 
 ## 6. 状态管理与数据存储
 
-请说明全局状态的管理方式（Context / Redux 等）以及数据持久化方案：
+- **全局状态：** `UserContext`（前台用户）、`ServiceContext`（注入各 Service）、`CartContext`（购物车 UI 状态）、`ToastProvider`（全局提示）
+- **后端持久化：** `server/data/db.json` 存储商品、订单、分类、用户、购物车、后台角色与用户
+- **浏览器缓存：** `mall_user`（前台会话）、`mall_admin`（后台会话）、`cartList`（未登录购物车）、`checkoutItems`（结算临时数据）
+- **前后台联动：** 前台与后台均通过 `/api/*` 读写同一份 `db.json`，后台改商品后前台刷新即可看到
 
-- **全局状态管理方式：** Context API + Service模式
-  - ServiceContext：提供goodService、orderService、userService三个服务实例
-  - CartContext：专门管理购物车状态，包括商品列表、数量、选中状态等
-  
-- **数据存储方式：** localStorage持久化
-  - goodList：商品列表数据
-  - orderList：订单列表数据
-  - userList：用户列表数据
-  - currentUser：当前登录用户信息
-  - cart：购物车数据
-  
-- **前后台数据联动方式：** 
-  - 前台下单后，订单数据保存到localStorage
-  - 后台管理可以访问相同的localStorage数据，实现数据同步
-  - 用户登录后，前台和后台共享用户信息
+---
 
 ## 7. 加分项完成情况
 
-- [x] **后端联动**：使用localStorage模拟后端API，实现数据持久化和前后台数据共享
-- [x] **数据持久化**：刷新页面后购物车、登录状态、商品数据、订单数据均不丢失
-- [x] **表单验证**：登录注册时验证用户名和密码必填；注册时验证昵称必填；商品管理时验证名称和价格必填
-- [ ] **分页/无限滚动**：未实现（商品数量较少，暂不需要）
-- [ ] **支付模拟优化**：未实现支付倒计时/二维码等功能
-- [ ] **响应式布局**：使用Grid布局和flexbox，基本适配不同屏幕尺寸
-- [ ] **性能优化**：使用了React Hooks进行状态管理，组件合理拆分
-- [ ] **单元测试**：未编写单元测试
-- [ ] **部署上线**：未部署到线上平台
+- [x] **后端联动**：Node.js + Express REST API，Vite 代理 `/api` 至 `localhost:3001`
+- [x] **数据持久化**：`db.json` 持久化业务数据；登录态与购物车辅以 localStorage
+- [x] **表单验证**：登录/注册、后台商品与分类表单校验并提示
+- [x] **分页**：订单列表 `Pagination` 组件分页展示
+- [x] **支付模拟优化**：支付倒计时、模拟二维码、超时自动取消
+- [x] **响应式布局**：Header 移动端适配；商城 Grid 布局适配不同宽度
+- [x] **性能优化**：路由 `React.lazy` 懒加载、`ProductCard` 使用 `memo`
+- [ ] **单元测试**：未编写 Vitest 测试
+- [ ] **部署上线**：未部署至 Vercel/Netlify，链接待补充
+
+---
 
 ## 8. 遇到的问题与解决方案
 
 | 问题 | 解决方案 |
 |------|----------|
-| 购物车状态管理复杂 | 创建独立的CartContext，使用useState和useEffect结合localStorage实现状态管理和持久化 |
-| 前后台路由共用Layout导致导航栏显示问题 | 在App组件中使用useLocation判断当前路径，如果是/admin开头则不显示前台导航栏 |
-| 订单和商品数据关联 | 订单中只存储goodId，展示时通过goodService.getGoodById动态获取商品详细信息 |
-| 用户登录状态跨页面保持 | 在userService中使用currentUser属性和localStorage保存，每次应用启动时自动加载 |
-| 组件间数据传递繁琐 | 使用Context API提供全局服务，避免props层层传递 |
-| PowerShell不支持&&命令分隔符 | 改用直接运行命令，或使用分号分隔多个命令 |
+| 前端无法访问后端 | 配置 `vite.config.js` 代理 `/api`，使用 `npm run dev:all` 同时启动 |
+| 未启动后端时白屏 | `ServiceContext` 检测 `/api/health`，提示运行 `npm run server` |
+| 购物车登录前后不一致 | `cartService` 合并本地 `cartList` 与服务器购物车后清空本地缓存 |
+| 后台权限勾选不生效 | `AdminRolesPage` 改为本地编辑后统一保存，避免即时写入异常 |
+| 订单与商品展示分离 | 订单仅存 `goodId`，展示时通过 `goodService.getGoodById` 补全商品信息 |
+| Gerrit 合入冲突 | `git rebase origin/master` 后重新 push 至 `refs/for/master` |
