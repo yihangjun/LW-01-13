@@ -1,4 +1,4 @@
-﻿.header {
+.header {
   position: sticky;
   top: 0;
   z-index: 100;
@@ -107,6 +107,7 @@
 .mobile-menu-btn, .search-mobile-btn { display: none; }
 .header-search-mobile { display: none; }
 .nav-overlay { display: none; }
+.mobile-nav-extras { display: none; }
 
 @media (max-width: 768px) {
   .header-nav {
@@ -123,6 +124,7 @@
     gap: var(--space-2);
     z-index: 110;
     box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+    overflow-y: auto;
   }
   .header-nav.open { display: flex; }
   .nav-overlay {
@@ -136,10 +138,45 @@
   .header-search-desktop { display: none; }
   .mobile-menu-btn { display: flex; }
   .search-mobile-btn { display: flex; }
+  
+  /* 移动端隐藏顶部的购物车和用户按钮 */
+  .cart-btn,
+  .header-user-menu,
+  .header-login-btn {
+    display: none;
+  }
   .header-search-mobile {
     display: block;
     padding: var(--space-3) var(--space-4);
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-border);
+  }
+  
+  /* 移动端侧边菜单显示额外的导航项 */
+  .mobile-nav-extras {
+    display: flex;
+    flex-direction: column;
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+    gap: var(--space-1);
+  }
+  
+  .mobile-nav-extras .nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3);
+  }
+  
+  .mobile-nav-extras .cart-badge {
+    position: static;
+    margin-left: auto;
+  }
+  
+  .logout-btn,
+  .login-btn {
+    justify-content: flex-start;
+    text-align: left;
   }
 }

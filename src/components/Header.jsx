@@ -33,6 +33,30 @@ export default function Header() {
           {user && (
             <Link to="/order-list" className="nav-link" onClick={() => setMobileMenuOpen(false)}>订单</Link>
           )}
+          {/* 移动端隐藏的购物车和个人入口 */}
+          <div className="mobile-nav-extras">
+            <Link to="/cart" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+              <ShoppingCart size={20} />
+              <span>购物车</span>
+              {totalCount > 0 && <span className="cart-badge">{totalCount}</span>}
+            </Link>
+            {user ? (
+              <>
+                <Link to="/user" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+                  <User size={20} />
+                  <span>个人中心</span>
+                </Link>
+                <button className="nav-link logout-btn" onClick={handleLogout}>
+                  <LogOut size={20} />
+                  <span>退出登录</span>
+                </button>
+              </>
+            ) : (
+              <Link to="/login" className="nav-link login-btn" onClick={() => setMobileMenuOpen(false)}>
+                登录 / 注册
+              </Link>
+            )}
+          </div>
         </nav>
 
         <div className="header-actions">

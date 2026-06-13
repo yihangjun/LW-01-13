@@ -1,4 +1,4 @@
-﻿.footer {
+.footer {
   background: #2b2d30;
   color: #a0a0a0;
   padding: var(--space-10) 0 var(--space-6);
@@ -67,4 +67,8 @@
 
 @media (max-width: 640px) {
   .footer-grid { grid-template-columns: 1fr; gap: var(--space-6); }
+  /* 移动端为底部导航留出空间 */
+  .footer {
+    margin-bottom: 60px;
+  }
 }

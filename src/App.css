@@ -1,4 +1,4 @@
-﻿.app {
+.app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -10,5 +10,9 @@
 }
 
 @media (max-width: 640px) {
-  .app-main { padding: var(--space-4) 0; }
+  .app-main { 
+    padding: var(--space-4) 0;
+    /* 为底部导航留出空间 */
+    padding-bottom: 80px;
+  }
 }
