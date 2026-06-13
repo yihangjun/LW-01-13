@@ -1,7 +1,32 @@
-﻿.product-grid {
+.product-grid {
   display: grid;
+  /* PC 端默认：一行4个商品（minmax(220px, 1fr) 自动适配） */
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: var(--space-4);
+}
+
+/* 平板端：769px ~ 1024px → 一行2个 */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+}
+
+/* 手机端：≤768px → 一行2个（保持原有逻辑） */
+@media (max-width: 768px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+}
+
+/* 超小屏幕：≤480px → 一行2个（更紧凑） */
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2);
+  }
 }
 
 .product-grid-empty {
@@ -10,11 +35,4 @@
   padding: var(--space-12) var(--space-4);
   color: var(--color-text-muted);
   font-size: var(--text-lg);
-}
-
-@media (max-width: 480px) {
-  .product-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-3);
-  }
 }

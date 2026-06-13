@@ -1,4 +1,4 @@
-﻿function colorPlaceholder(id, width, height) {
+function colorPlaceholder(id, width, height) {
   const hue = ((id || 1) * 137) % 360;
   const bg = `hsl(${hue}, 55%, 75%)`;
   const fg = `hsl(${hue}, 45%, 40%)`;
@@ -20,7 +20,11 @@ export function isGoodOnSale(good) {
 
 export function getGoodImage(good) {
   if (!good) return '';
+  // 优先使用 imgUrl 字段（统一规范）
+  if (good.imgUrl) return good.imgUrl;
+  // 兼容旧的 img 字段
   if (good.img && !good.img.includes('picsum.photos')) return good.img;
+  // 如果没有真实图片，使用颜色占位图
   if (good.color) return colorPlaceholder(good.id);
   if (good.id) return colorPlaceholder(good.id);
   return null;

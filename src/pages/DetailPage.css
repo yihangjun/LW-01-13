@@ -1,4 +1,4 @@
-﻿.detail-page { padding-top: var(--space-4); }
+.detail-page { padding-top: var(--space-4); }
 .detail-not-found { text-align: center; padding: var(--space-16) var(--space-4); }
 .detail-not-found h2 { margin-bottom: var(--space-4); }
 .detail-back-link { color: var(--color-accent); }
@@ -42,8 +42,37 @@
 .detail-related { margin-top: var(--space-12); }
 .detail-related-title { font-size: var(--text-xl); font-weight: 700; margin-bottom: var(--space-4); }
 
-@media (max-width: 768px) {
-  .detail-content { grid-template-columns: 1fr; gap: var(--space-6); }
+@media (max-width: 1024px) and (min-width: 769px) {
+  /* 平板端：左右布局，但缩小间距 */
+  .detail-content { 
+    grid-template-columns: 1fr 1fr; 
+    gap: var(--space-4); 
+  }
   .detail-name { font-size: var(--text-xl); }
   .detail-price { font-size: var(--text-2xl); }
+}
+
+@media (max-width: 768px) {
+  /* 手机端：上下布局 */
+  .detail-content { 
+    grid-template-columns: 1fr; 
+    gap: var(--space-4); 
+  }
+  .detail-name { font-size: var(--text-lg); }
+  .detail-price { font-size: var(--text-xl); }
+  .detail-actions { 
+    flex-direction: column; 
+    gap: var(--space-2); 
+  }
+  .detail-btn-cart, .detail-btn-buy {
+    width: 100%;
+    justify-content: center;
+  }
+  .detail-thumbs {
+    gap: var(--space-1);
+  }
+  .detail-thumb {
+    width: 56px;
+    height: 56px;
+  }
 }
