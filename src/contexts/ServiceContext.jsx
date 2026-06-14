@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useEffect, useState, useCallback } from 'react';
 import goodService from '../services/goodService';
 import orderService from '../services/orderService';
 import categoryService from '../services/categoryService';
@@ -8,9 +8,39 @@ import { checkApiHealth } from '../utils/api';
 
 const ServiceContext = createContext();
 
+const isAdminPath = () =>
+  typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+
+function BootstrapScreen({ message, hint, onRetry, error }) {
+  return (
+    <div className="app-bootstrap">
+      <div className="app-bootstrap__card">
+        {!error && <div className="app-bootstrap__spinner" aria-hidden="true" />}
+        <p className="app-bootstrap__title">{message}</p>
+        {hint && <p className="app-bootstrap__hint">{hint}</p>}
+        {error && (
+          <p className="app-bootstrap__error">{error}</p>
+        )}
+        {onRetry && (
+          <button type="button" className="app-bootstrap__retry" onClick={onRetry}>
+            重新加载
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const ServiceProvider = ({ children }) => {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
+  const [bootKey, setBootKey] = useState(0);
+
+  const retry = useCallback(() => {
+    setError('');
+    setReady(false);
+    setBootKey((k) => k + 1);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -19,20 +49,24 @@ const ServiceProvider = ({ children }) => {
       const healthy = await checkApiHealth();
       if (!healthy) {
         if (!cancelled) {
-          setError('无法连接后端服务，请先运行 npm run server');
+          setError(
+            '无法连接后端 API。Render 免费实例可能正在唤醒（约 30～60 秒），请稍后点击重新加载。',
+          );
         }
         return;
       }
 
       try {
-        await Promise.all([
-          goodService.init(),
-          orderService.init(),
-          categoryService.init(),
-          adminService.init(),
-        ]);
+        const coreInit = [goodService.init(), categoryService.init()];
+        if (isAdminPath()) {
+          coreInit.push(orderService.init(), adminService.init());
+        }
+        await Promise.all(coreInit);
         if (!cancelled) {
           setReady(true);
+        }
+        if (!isAdminPath()) {
+          Promise.all([orderService.init(), adminService.init()]).catch(() => {});
         }
       } catch (err) {
         if (!cancelled) {
@@ -43,7 +77,7 @@ const ServiceProvider = ({ children }) => {
 
     bootstrap();
     return () => { cancelled = true; };
-  }, []);
+  }, [bootKey]);
 
   const value = {
     good: goodService,
@@ -55,39 +89,20 @@ const ServiceProvider = ({ children }) => {
 
   if (error) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px',
-        textAlign: 'center',
-        color: '#c0392b',
-      }}
-      >
-        <div>
-          <p style={{ fontSize: '18px', marginBottom: '8px' }}>后端服务未启动</p>
-          <p style={{ color: '#666' }}>{error}</p>
-          <p style={{ marginTop: '16px', color: '#666' }}>
-            请在项目根目录执行：<code>npm run server</code> 或 <code>npm run dev:all</code>
-          </p>
-        </div>
-      </div>
+      <BootstrapScreen
+        message="商城暂时无法加载"
+        error={error}
+        onRetry={retry}
+      />
     );
   }
 
   if (!ready) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#666',
-      }}
-      >
-        正在加载商城数据…
-      </div>
+      <BootstrapScreen
+        message="正在加载商城数据…"
+        hint="首次打开若较慢，多为后端正在唤醒，请稍候"
+      />
     );
   }
 

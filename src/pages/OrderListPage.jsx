@@ -34,7 +34,7 @@ export default function OrderListPage() {
   const [page, setPage] = useState(1);
 
   const orders = user
-    ? services.order.getOrdersByUserId(user.id).sort((a, b) => b.id - a.id)
+    ? services.order.getOrdersByUserId(user.username).sort((a, b) => b.id - a.id)
     : [];
 
   const filtered = filter === FILTER_ALL
