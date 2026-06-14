@@ -12,6 +12,34 @@ function colorPlaceholder(id, width, height) {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
+/** 本地商品图片映射（与 public/images 对应） */
+const LOCAL_GOOD_IMAGES = {
+  1: '/images/xiaomi12pro.png',
+  2: '/images/huawei-mate70.png',
+  3: '/images/default.png',
+  4: '/images/lenovo-laptop.png',
+  5: '/images/dyson-supersonic.png',
+  6: '/images/nike-shoes.png',
+  7: '/images/sony-wh1000xm5.png',
+  8: '/images/ipad-air-m3.png',
+  9: '/images/haier-fridge.png',
+  10: '/images/midea-ac.png',
+  11: '/images/dell-inspiron.png',
+  12: '/images/mx-keys.png',
+  13: '/images/lining-chitu.png',
+  14: '/images/uniqlo-tshirt.png',
+  15: '/images/cheers-sofa.png',
+  16: '/images/opple-light.png',
+  17: '/images/philips-s5588.png',
+  18: '/images/castrol-oil.png',
+  19: '/images/70mai-dashcam.png',
+  20: '/images/deli-printer.png',
+};
+
+function isUsableImageUrl(url) {
+  return url && !url.includes('picsum.photos');
+}
+
 export function isGoodOnSale(good) {
   if (!good) return false;
   if (good.isOnSale === false || good.onSale === false) return false;
@@ -20,11 +48,9 @@ export function isGoodOnSale(good) {
 
 export function getGoodImage(good) {
   if (!good) return '';
-  // 优先使用 imgUrl 字段（统一规范）
-  if (good.imgUrl) return good.imgUrl;
-  // 兼容旧的 img 字段
-  if (good.img && !good.img.includes('picsum.photos')) return good.img;
-  // 如果没有真实图片，使用颜色占位图
+  if (isUsableImageUrl(good.imgUrl)) return good.imgUrl;
+  if (isUsableImageUrl(good.img)) return good.img;
+  if (LOCAL_GOOD_IMAGES[good.id]) return LOCAL_GOOD_IMAGES[good.id];
   if (good.color) return colorPlaceholder(good.id);
   if (good.id) return colorPlaceholder(good.id);
   return null;
