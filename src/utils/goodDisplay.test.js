@@ -22,6 +22,15 @@ describe('goodDisplay utilities', () => {
     );
   });
 
+  it('uses local iPhone 16 image for product id 3', () => {
+    expect(getGoodImage({ id: 3, name: '苹果 iPhone 16' })).toBe('/images/iphone16.png');
+  });
+
+  it('returns placeholder text for missing address', () => {
+    expect(formatOrderAddress(null)).toBe('未填写');
+    expect(formatOrderAddress('')).toBe('未填写');
+  });
+
   it('checks product sale status using both supported fields', () => {
     expect(isGoodOnSale({ onSale: true })).toBe(true);
     expect(isGoodOnSale({ onSale: false })).toBe(false);

@@ -21,25 +21,30 @@ export const DEFAULT_ROLES = [
     name: '商品运营',
     permissions: ['goods', 'categories'],
   },
+  {
+    id: 'category_mgr',
+    name: '分类专员',
+    permissions: ['categories'],
+  },
+  {
+    id: 'ops_dev',
+    name: '技术运营',
+    permissions: ['goods', 'categories', 'orders'],
+  },
 ];
 
 export const DEFAULT_ADMIN_USERS = [
-  {
-    username: 'admin',
-    password: 'admin123',
-    name: '管理员',
-    roleId: 'admin',
-  },
-  {
-    username: 'operator',
-    password: '123456',
-    name: '运营小王',
-    roleId: 'operator',
-  },
+  { username: 'admin', password: 'admin123', name: '周一航', roleId: 'admin' },
+  { username: 'luduxing', password: '123456', name: '罗督星', roleId: 'operator' },
+  { username: 'zhangzhe', password: '123456', name: '张喆', roleId: 'product' },
+  { username: 'zhourui', password: '123456', name: '周锐', roleId: 'ops_dev' },
+  { username: 'wangyixiao', password: '123456', name: '王艺晓', roleId: 'category_mgr' },
+  { username: 'operator', password: '123456', name: '运营小李', roleId: 'operator' },
+  { username: 'product01', password: '123456', name: '商品小刘', roleId: 'product' },
+  { username: 'order01', password: '123456', name: '订单小陈', roleId: 'operator' },
 ];
 
 export const GOODS_TAG_HELP = {
   onSale: '上架：开启后商品在前台商城可见并可购买',
-  isNew: '新品：开启后商品展示「新品」标识',
   isRecommended: '推荐：开启后进入首页热门/推荐区域',
 };

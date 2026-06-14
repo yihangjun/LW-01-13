@@ -5,19 +5,26 @@ import { GOODS_TAG_HELP } from '../../constants/adminPermissions';
 import AdminModal from '../../components/admin/AdminModal';
 import AdminConfirm from '../../components/admin/AdminConfirm';
 import ProductThumb from '../../components/ProductThumb';
+import {
+  calcDiscountPercent,
+  parsePriceInput,
+  syncPriceFields,
+} from '../../utils/priceDiscount';
 import './Admin.css';
 
 const emptyForm = () => ({
   name: '',
   price: '',
+  originalPrice: '',
+  discount: '',
   brand: '',
   sku: '',
   stock: '',
   categoryId: '2-1',
   color: '#ccc',
   spec: '',
+  imgUrl: '',
   onSale: true,
-  isNew: false,
   isRecommended: false,
   isHot: false,
   sort: 99,
@@ -68,18 +75,21 @@ const AdminGoodsPage = () => {
 
   const openEdit = (g) => {
     if (!g?.id) return;
+    const discount = calcDiscountPercent(g.price, g.originalPrice);
     setEditingId(g.id);
     setForm({
       name: g.name,
       price: g.price,
+      originalPrice: g.originalPrice ? String(g.originalPrice) : '',
+      discount: discount > 0 ? String(discount) : '',
       brand: g.brand,
       sku: g.sku,
       stock: g.stock,
       categoryId: g.categoryId,
       color: g.color,
       spec: g.spec,
+      imgUrl: g.imgUrl || '',
       onSale: g.onSale,
-      isNew: g.isNew,
       isRecommended: g.isRecommended,
       isHot: g.isHot,
       sort: g.sort,
@@ -88,15 +98,29 @@ const AdminGoodsPage = () => {
     setModalOpen(true);
   };
 
+  const handlePriceFieldChange = (field, value) => {
+    setForm((prev) => syncPriceFields(field, { ...prev, [field]: value }));
+  };
+
   const handleSubmit = async () => {
     if (!form.name.trim()) {
       setFormError('请输入商品名称');
       return;
     }
-    const price = Number(form.price);
+    const price = parsePriceInput(form.price);
+    const originalPrice = parsePriceInput(form.originalPrice);
     const stock = Number(form.stock);
     if (!price || price <= 0) {
-      setFormError('请输入有效价格');
+      setFormError('请输入有效现价');
+      return;
+    }
+    if (originalPrice != null && originalPrice <= price) {
+      setFormError('原价须大于现价，或留空表示无折扣');
+      return;
+    }
+    const discount = calcDiscountPercent(price, originalPrice);
+    if (parsePriceInput(form.discount) != null && discount <= 0) {
+      setFormError('折扣与现价、原价不一致，请检查');
       return;
     }
     if (!stock || stock < 0) {
@@ -111,7 +135,10 @@ const AdminGoodsPage = () => {
       brand: form.brand.trim() || '品牌',
       sku: form.sku.trim() || `SKU-${Date.now()}`,
       spec: form.spec.trim() || '默认规格',
+      imgUrl: form.imgUrl.trim(),
+      originalPrice: originalPrice != null && originalPrice > price ? originalPrice : null,
     };
+    delete payload.discount;
     try {
       if (editing) {
         await good.updateGood({ ...editing, ...payload });
@@ -184,7 +211,7 @@ const AdminGoodsPage = () => {
               <tr>
                 <th>ID</th>
                 <th>商品信息</th>
-                <th>价格/货号</th>
+                <th>价格信息</th>
                 <th>标签</th>
                 <th>库存/销量</th>
                 <th>审核状态</th>
@@ -205,8 +232,18 @@ const AdminGoodsPage = () => {
                     </div>
                   </td>
                   <td>
-                    <strong>¥{g.price}</strong>
-                    <small>{g.sku}</small>
+                    <div className="admin-price-cell">
+                      <strong className="admin-price-current">现价 ¥{g.price}</strong>
+                      {g.originalPrice && (
+                        <span className="admin-price-original">原价 ¥{g.originalPrice}</span>
+                      )}
+                      {calcDiscountPercent(g.price, g.originalPrice) > 0 && (
+                        <span className="admin-price-discount">
+                          -{calcDiscountPercent(g.price, g.originalPrice)}%
+                        </span>
+                      )}
+                      <small className="admin-price-sku">{g.sku}</small>
+                    </div>
                   </td>
                   <td>
                     <div className="admin-tags">
@@ -217,14 +254,6 @@ const AdminGoodsPage = () => {
                         }} />
                         <span className="admin-toggle__slider" />
                         <span className="admin-toggle__label">上架</span>
-                      </label>
-                      <label className="admin-toggle" title={GOODS_TAG_HELP.isNew}>
-                        <input type="checkbox" checked={g.isNew} onChange={async () => {
-                          try { await good.toggleField(g.id, 'isNew'); bump(); }
-                          catch (err) { toast(err.message || '操作失败', 'error'); }
-                        }} />
-                        <span className="admin-toggle__slider" />
-                        <span className="admin-toggle__label">新品</span>
                       </label>
                       <label className="admin-toggle" title={GOODS_TAG_HELP.isRecommended}>
                         <input type="checkbox" checked={g.isRecommended} onChange={async () => {
@@ -282,8 +311,38 @@ const AdminGoodsPage = () => {
             <input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} />
           </label>
           <label className="admin-form-item">
-            <span>价格</span>
-            <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+            <span>现价（元）</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              placeholder="销售价"
+              value={form.price}
+              onChange={(e) => handlePriceFieldChange('price', e.target.value)}
+            />
+          </label>
+          <label className="admin-form-item">
+            <span>原价（元）</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              placeholder="划线价，无折扣可留空"
+              value={form.originalPrice}
+              onChange={(e) => handlePriceFieldChange('originalPrice', e.target.value)}
+            />
+          </label>
+          <label className="admin-form-item">
+            <span>折扣（%）</span>
+            <input
+              type="number"
+              min="0"
+              max="99"
+              step="1"
+              placeholder="如 20 表示 -20%"
+              value={form.discount}
+              onChange={(e) => handlePriceFieldChange('discount', e.target.value)}
+            />
           </label>
           <label className="admin-form-item">
             <span>库存</span>
@@ -313,9 +372,30 @@ const AdminGoodsPage = () => {
             <span>规格</span>
             <input value={form.spec} onChange={(e) => setForm({ ...form, spec: e.target.value })} />
           </label>
+          <label className="admin-form-item admin-form-item--full">
+            <span>图片地址</span>
+            <input
+              placeholder="如 /images/xiaomi12pro.png，留空则按商品 ID 匹配本地图"
+              value={form.imgUrl}
+              onChange={(e) => setForm({ ...form, imgUrl: e.target.value })}
+            />
+          </label>
+          <div className="admin-form-item admin-form-item--full admin-goods-preview">
+            <span>图片预览</span>
+            <ProductThumb
+              product={{
+                id: editing?.id,
+                name: form.name || '预览',
+                imgUrl: form.imgUrl,
+                color: form.color,
+              }}
+              className="admin-goods-thumb admin-goods-thumb--preview"
+            />
+          </div>
         </div>
         <div className="admin-form-hint">
-          <p>标签说明：上架=前台可购买；新品=显示新品角标；推荐=进入首页推荐区</p>
+          <p>价格说明：填写现价、原价、折扣任意两项，第三项会自动推算（与前台 -XX% 角标一致）。无折扣时只填现价即可。</p>
+          <p>标签说明：上架=前台可购买；推荐=进入首页热门推荐区</p>
         </div>
       </AdminModal>
 

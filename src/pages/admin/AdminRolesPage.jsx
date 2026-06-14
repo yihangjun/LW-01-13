@@ -1,4 +1,4 @@
-import { useContext, useCallback, useMemo, useState } from 'react';
+import { useContext, useCallback, useMemo, useState, useEffect } from 'react';
 import { ServiceContext } from '../../contexts/ServiceContext';
 import { useToast } from '../../components/Toast';
 import AdminModal from '../../components/admin/AdminModal';
@@ -48,6 +48,20 @@ const AdminRolesPage = () => {
 
   const reloadUsers = useCallback(() => {
     setUsers((admin.getUsers() || []).filter((u) => u?.username));
+  }, [admin]);
+
+  useEffect(() => {
+    let active = true;
+    admin.init().then(() => {
+      if (!active) return;
+      const fresh = loadRoleRows(admin);
+      setRoleRows(fresh);
+      setUsers((admin.getUsers() || []).filter((u) => u?.username));
+      setSavedSnapshot(JSON.stringify(fresh));
+    });
+    return () => {
+      active = false;
+    };
   }, [admin]);
 
   const showSavedHint = () => {

@@ -67,7 +67,6 @@ const MyPage = () => {
         ))}
       </ul>
       <button type="button" className="my-logout" onClick={logout}>退出登录</button>
-      <Link to="/admin/login" className="my-admin-link">后台管理入口</Link>
     </div>
   );
 };

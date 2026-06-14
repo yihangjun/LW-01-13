@@ -18,7 +18,7 @@ export async function request(path, options = {}) {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  let payload = {};
+  let payload;
   try {
     payload = await res.json();
   } catch {

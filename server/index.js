@@ -25,7 +25,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/carts', cartsRouter);
 
-app.use((err, _req, res, _next) => {
+app.use((err, _req, res) => {
   console.error(err);
   res.status(500).json({ ok: false, message: '服务器内部错误' });
 });

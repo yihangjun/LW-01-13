@@ -16,7 +16,7 @@ function colorPlaceholder(id, width, height) {
 const LOCAL_GOOD_IMAGES = {
   1: '/images/xiaomi12pro.png',
   2: '/images/huawei-mate70.png',
-  3: '/images/default.png',
+  3: '/images/iphone16.png',
   4: '/images/lenovo-laptop.png',
   5: '/images/dyson-supersonic.png',
   6: '/images/nike-shoes.png',

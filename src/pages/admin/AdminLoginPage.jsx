@@ -86,7 +86,6 @@ const AdminLoginPage = () => {
           >
             {demoLoading ? '正在登录…' : '使用体验账号登录'}
           </button>
-          <p className="admin-demo-note">体验账号为系统预设管理员，一键进入后台</p>
         </form>
       </main>
     </div>

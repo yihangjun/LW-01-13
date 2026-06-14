@@ -7,6 +7,7 @@ import GoodImage from "./GoodImage";
 import { ServiceContext } from "../contexts/ServiceContext";
 import { useNavigate } from "react-router-dom";
 import { formatPrice } from "../utils/format";
+import { calcDiscountPercent } from "../utils/priceDiscount";
 import "./ProductCard.css";
 
 const ProductCard = memo(function ProductCard({ good }) {
@@ -24,9 +25,7 @@ const ProductCard = memo(function ProductCard({ good }) {
     addToCart(good.id, 1, good);
   };
 
-  const discount = good.originalPrice
-    ? Math.round((1 - good.price / good.originalPrice) * 100)
-    : 0;
+  const discount = calcDiscountPercent(good.price, good.originalPrice);
 
   return (
     <Link to={`/detail/${good.id}`} className="product-card">

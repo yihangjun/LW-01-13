@@ -9,6 +9,7 @@ import ProductGrid from "../components/ProductGrid";
 import GoodImage from "../components/GoodImage";
 import { formatPrice } from "../utils/format";
 import { isGoodOnSale, getGoodImage } from "../utils/goodDisplay";
+import { calcDiscountPercent } from "../utils/priceDiscount";
 import "./DetailPage.css";
 
 export default function DetailPage() {
@@ -43,8 +44,7 @@ export default function DetailPage() {
     );
   }
 
-  const discount = good.originalPrice
-    ? Math.round((1 - good.price / good.originalPrice) * 100) : 0;
+  const discount = calcDiscountPercent(good.price, good.originalPrice);
 
   const handleAddToCart = () => {
     if (!user) { navigate("/login"); return; }

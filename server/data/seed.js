@@ -1,4 +1,4 @@
-export const GOODS_VERSION = '8';
+export const GOODS_VERSION = '10';
 
 export const defaultCategories = [
   {
@@ -60,7 +60,7 @@ export const defaultCategories = [
 export const defaultGoods = [
   { id: 1, name: '小米 12 Pro', price: 2999, categoryId: '2-1', brand: '小米', sku: 'MI12P-128', stock: 100, isHot: true, onSale: true, isNew: true, isRecommended: true, sort: 1, sales: 256, auditStatus: '未审核', color: '#ff9a76', spec: '黑色 128G', imgUrl: '/images/xiaomi12pro.png' },
   { id: 2, name: '华为 Mate 70', price: 5499, categoryId: '2-1', brand: '华为', sku: 'HW70-256', stock: 80, isHot: true, onSale: true, isNew: false, isRecommended: true, sort: 2, sales: 189, auditStatus: '未审核', color: '#6b8cff', spec: '白色 256G', imgUrl: '/images/huawei-mate70.png' },
-  { id: 3, name: '苹果 iPhone 16', price: 6999, categoryId: '2-1', brand: 'Apple', sku: 'IP16-128', stock: 60, isHot: true, onSale: false, isNew: true, isRecommended: true, sort: 3, sales: 320, auditStatus: '未审核', color: '#a8e6cf', spec: '原色 128G', imgUrl: '/images/default.png' },
+  { id: 3, name: '苹果 iPhone 16', price: 6999, categoryId: '2-1', brand: 'Apple', sku: 'IP16-128', stock: 60, isHot: true, onSale: false, isNew: true, isRecommended: true, sort: 3, sales: 320, auditStatus: '未审核', color: '#a8e6cf', spec: '原色 128G', imgUrl: '/images/iphone16.png' },
   { id: 4, name: '联想笔记本电脑', price: 4599, categoryId: '6-1', brand: '联想', sku: 'LN-4599', stock: 45, isHot: true, onSale: true, isNew: false, isRecommended: false, sort: 4, sales: 98, auditStatus: '未审核', color: '#ffd3b6', spec: '16G 512G', imgUrl: '/images/lenovo-laptop.png' },
   { id: 5, name: '戴森吹风机', price: 2890, categoryId: '3-2', brand: '戴森', sku: 'DY-2890', stock: 30, isHot: false, onSale: true, isNew: false, isRecommended: false, sort: 5, sales: 67, auditStatus: '未审核', color: '#dcedc1', spec: '紫红色', imgUrl: '/images/dyson-supersonic.png' },
   { id: 6, name: '耐克运动鞋', price: 699, categoryId: '1-1', brand: '耐克', sku: 'NK-699', stock: 200, isHot: true, onSale: true, isNew: true, isRecommended: true, sort: 6, sales: 512, auditStatus: '未审核', color: '#ffaaa5', spec: '42码 黑色', imgUrl: '/images/nike-shoes.png' },
@@ -84,15 +84,152 @@ export const defaultAdminRoles = [
   { id: 'admin', name: '超级管理员', permissions: ['goods', 'categories', 'orders', 'roles'] },
   { id: 'operator', name: '运营人员', permissions: ['orders'] },
   { id: 'product', name: '商品运营', permissions: ['goods', 'categories'] },
+  { id: 'category_mgr', name: '分类专员', permissions: ['categories'] },
+  { id: 'ops_dev', name: '技术运营', permissions: ['goods', 'categories', 'orders'] },
 ];
 
 export const defaultAdminUsers = [
-  { username: 'admin', password: 'admin123', name: '管理员', roleId: 'admin' },
-  { username: 'operator', password: '123456', name: '运营小王', roleId: 'operator' },
+  { username: 'admin', password: 'admin123', name: '周一航', roleId: 'admin' },
+  { username: 'luduxing', password: '123456', name: '罗督星', roleId: 'operator' },
+  { username: 'zhangzhe', password: '123456', name: '张喆', roleId: 'product' },
+  { username: 'zhourui', password: '123456', name: '周锐', roleId: 'ops_dev' },
+  { username: 'wangyixiao', password: '123456', name: '王艺晓', roleId: 'category_mgr' },
+  { username: 'operator', password: '123456', name: '运营小李', roleId: 'operator' },
+  { username: 'product01', password: '123456', name: '商品小刘', roleId: 'product' },
+  { username: 'order01', password: '123456', name: '订单小陈', roleId: 'operator' },
 ];
 
 export const defaultUsers = [
-  { username: 'member', password: '123456', nickname: 'member' },
+  {
+    username: 'member',
+    password: '123456',
+    nickname: '会员小明',
+    phone: '13800138001',
+    address: '上海市浦东新区世纪大道 100 号',
+  },
+  {
+    username: 'zhangwei',
+    password: '123456',
+    nickname: '张伟',
+    phone: '13800138002',
+    address: '北京市海淀区中关村大街 1 号',
+  },
+  {
+    username: 'lina',
+    password: '123456',
+    nickname: '李娜',
+    phone: '13800138003',
+    address: '广州市天河区体育西路 88 号',
+  },
+  {
+    username: 'wangfang',
+    password: '123456',
+    nickname: '王芳',
+    phone: '13800138004',
+    address: '深圳市南山区科技园南路 16 号',
+  },
+  {
+    username: 'liuqiang',
+    password: '123456',
+    nickname: '刘强',
+    phone: '13800138005',
+    address: '杭州市西湖区文三路 200 号',
+  },
+  {
+    username: 'chenjing',
+    password: '123456',
+    nickname: '陈静',
+    phone: '13800138006',
+    address: '成都市武侯区天府大道 666 号',
+  },
+];
+
+export const defaultOrders = [
+  {
+    id: 1,
+    orderNo: '202506100001',
+    userAccount: 'member',
+    items: [{ goodId: 6, count: 1, price: 699 }],
+    address: {
+      name: '会员小明',
+      phone: '13800138001',
+      detail: '上海市浦东新区世纪大道 100 号',
+    },
+    total: 699,
+    status: 1,
+    createTime: '2025-06-10 14:30:00',
+    payTime: '2025-06-10 14:32:00',
+    payMethod: 'alipay',
+    source: 'APP订单',
+  },
+  {
+    id: 2,
+    orderNo: '202506110002',
+    userAccount: 'zhangwei',
+    items: [{ goodId: 7, count: 1, price: 2299 }],
+    address: {
+      name: '张伟',
+      phone: '13800138002',
+      detail: '北京市海淀区中关村大街 1 号',
+    },
+    total: 2299,
+    status: 2,
+    createTime: '2025-06-11 09:15:00',
+    payTime: '2025-06-11 09:18:00',
+    payMethod: 'wechat',
+    source: 'APP订单',
+  },
+  {
+    id: 3,
+    orderNo: '202506120003',
+    userAccount: 'lina',
+    items: [{ goodId: 8, count: 1, price: 4799 }],
+    address: {
+      name: '李娜',
+      phone: '13800138003',
+      detail: '广州市天河区体育西路 88 号',
+    },
+    total: 4799,
+    status: 0,
+    createTime: '2025-06-12 20:45:00',
+    payTime: null,
+    payMethod: null,
+    source: 'APP订单',
+  },
+  {
+    id: 4,
+    orderNo: '202506130004',
+    userAccount: 'wangfang',
+    items: [{ goodId: 13, count: 2, price: 399 }],
+    address: {
+      name: '王芳',
+      phone: '13800138004',
+      detail: '深圳市南山区科技园南路 16 号',
+    },
+    total: 798,
+    status: 3,
+    createTime: '2025-06-13 11:20:00',
+    payTime: '2025-06-13 11:22:00',
+    payMethod: 'alipay',
+    source: 'APP订单',
+  },
+  {
+    id: 5,
+    orderNo: '202506140005',
+    userAccount: 'liuqiang',
+    items: [{ goodId: 12, count: 1, price: 699 }, { goodId: 14, count: 3, price: 99 }],
+    address: {
+      name: '刘强',
+      phone: '13800138005',
+      detail: '杭州市西湖区文三路 200 号',
+    },
+    total: 996,
+    status: 1,
+    createTime: '2025-06-14 08:10:00',
+    payTime: '2025-06-14 08:12:00',
+    payMethod: 'wechat',
+    source: 'APP订单',
+  },
 ];
 
 export function createSeedDb() {
@@ -103,7 +240,11 @@ export function createSeedDb() {
       ...c,
       children: (c.children || []).map((ch) => ({ ...ch })),
     })),
-    orders: [],
+    orders: defaultOrders.map((o) => ({
+      ...o,
+      items: o.items.map((i) => ({ ...i })),
+      address: { ...o.address },
+    })),
     users: defaultUsers.map((u) => ({ ...u })),
     adminUsers: defaultAdminUsers.map((u) => ({ ...u })),
     adminRoles: defaultAdminRoles.map((r) => ({

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Package, MapPin, Phone, Edit3, Save, X, Settings } from 'lucide-react';
+import { User, Package, MapPin, Phone, Edit3, Save, X } from 'lucide-react';
 import { useMallAuth } from '../hooks/useMallAuth';
 import { useToast } from '../components/Toast';
 import './UserPage.css';
@@ -97,9 +97,6 @@ export default function UserPage() {
       <div className="user-actions">
         <Link to="/order-list" className="user-action-btn">
           <Package size={20} /> 我的订单
-        </Link>
-        <Link to="/admin/login" className="user-admin-link">
-          <Settings size={20} /> 后台管理
         </Link>
         <button className="user-logout-btn" onClick={handleLogout}>
           退出登录
