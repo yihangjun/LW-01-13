@@ -31,6 +31,9 @@ export default function GoodImage({ good, className, alt }) {
         alt={alt || good?.name || '商品'}
         className={className}
         loading="lazy"
+        onError={(e) => {
+          e.target.src = '/images/default.png';
+        }}
       />
     );
   }
